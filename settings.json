@@ -1,0 +1,856 @@
+{
+ "participants": [
+  {
+   "role": "裁示者（人）",
+   "id": "William",
+   "account": "teacherjung"
+  },
+  {
+   "role": "AI 甲",
+   "id": "Claude",
+   "account": "teacherjung"
+  },
+  {
+   "role": "AI 乙",
+   "id": "Codex",
+   "account": "teacherjung"
+  },
+  {
+   "role": "AI 丙",
+   "id": "Grok",
+   "account": "teacherjung"
+  },
+  {
+   "role": "AI 丁",
+   "id": "Gemini",
+   "account": "teacherjung"
+  }
+ ],
+ "accountRule": "只採計登記在參與者表裡的貼文帳號貼的 ❓／⚖️／🚫；沒登記的帳號貼的不採計為有效留痕——它貼的 ❓ 不入待裁，它貼的 ⚖️／🚫 不能替已採計的問題收口（原題繼續待裁），形狀合規的會另列成疑似。⚖️ 另外要由裁示者那一位的帳號貼。結論閘只認識別值、不認帳號。多方共用同一個帳號時，機器分不出是誰親自貼的——那是這套機制的邊界，不是保證。",
+ "identityDomain": "現階段只准純拉丁字母：結論標頭的正則只收 A 到 Z 的字母，協作欄位閘收得寬，兩道機器值域不同——要放寬就得標頭與欄位閘整族一起改。",
+ "defaultDivision": {
+  "implementer": "Gemini",
+  "reviewer": "Codex"
+ },
+ "owner": "William",
+ "sources": [
+  {
+   "tool": "本機 codex CLI 起的審查 session",
+   "string": "codex CLI"
+  },
+  {
+   "tool": "Claude Code CLI 起的審查 session",
+   "string": "Claude CLI"
+  },
+  {
+   "tool": "Codex 桌面 session",
+   "string": "Codex 桌面"
+  },
+  {
+   "tool": "Claude 桌面 session",
+   "string": "Claude 桌面"
+  },
+  {
+   "tool": "William 本人（產品裁決）",
+   "string": "William 本人"
+  },
+  {
+   "tool": "本機 Grok CLI 起的複審或掃描 session",
+   "string": "Grok CLI"
+  },
+  {
+   "tool": "本機 Gemini CLI 起的複審 session",
+   "string": "Gemini CLI"
+  }
+ ],
+ "locations": [
+  {
+   "item": "禁區工具與能力清單（含攔截器安裝在哪一方）",
+   "rules": "B1",
+   "where": "未設定"
+  },
+  {
+   "item": "真實資料檔清單",
+   "rules": "B4",
+   "where": "未設定"
+  },
+  {
+   "item": "忽略清單、檢查豁免允許清單",
+   "rules": "E7",
+   "where": "未設定"
+  },
+  {
+   "item": "路標考題掃描的目錄範圍",
+   "rules": "K3",
+   "where": "未設定"
+  },
+  {
+   "item": "三關的實際命令、執行環境版本、稽核等級（或唯一設定檔位置）",
+   "rules": "E2、E3",
+   "where": "未設定"
+  },
+  {
+   "item": "必要檢查名單與分支保護設定（指向平台上的設定正本與驗證入口，不另抄一份會漂的名單）",
+   "rules": "E3、H3",
+   "where": "未設定"
+  },
+  {
+   "item": "合併步驟登記正本（閘登記對帳題讀它）",
+   "rules": "H1",
+   "where": "未設定"
+  },
+  {
+   "item": "「按合併鍵」前要查的三種例外（裁示者叫停、本支還沒回的待裁、改到禁區清單的PR要擁有者點頭）",
+   "rules": "A5",
+   "where": "未設定"
+  },
+  {
+   "item": "合併後驗收分級與動作的正本（路徑家族表＋各級動作）",
+   "rules": "H6",
+   "where": "未設定"
+  },
+  {
+   "item": "「指示檔」與「常設指示」寫在哪（各方開工時會自動讀進去的那一份；每一家讀多少照它的限制，見位置欄）",
+   "rules": "K6",
+   "where": "未設定"
+  },
+  {
+   "item": "「進度摘要」放在哪、已結束的留幾天（各方共用一份）",
+   "rules": "J5",
+   "where": "未設定"
+  }
+ ],
+ "backlog": {
+  "file": "README.md",
+  "section": "## 五大研究方向"
+ },
+ "downstream": {
+  "projects": []
+ },
+ "mainBranch": "main",
+ "scanner": {
+  "participant": "Grok",
+  "tool": "Grok CLI（xAI），經 node tools/review-launch.js --scan <編號> 在暫存掃描樹啟動，掃完由 --scan-post 核對樹乾淨、標頭合規且不含複審結論記號後代貼 🔍 掃描留言，再用 --scan-close 收樹；步驟見 README「本倉庫自己怎麼合併」的掃描那一項",
+  "assignedBy": "掃描發射者＝起得了掃描者的那一方（定義＝RULES A1、G4）；本倉庫現況＝實作者（擁有者 2026-10-18 指派 Gemini 實作、Codex 複審、Grok 掃描並於 2026-10-19 拍板改走 review-launch.js 統一掃描生命週期）；要換現況＝想換的那一方自己實測、貼出可重跑的結果，再問裁示者",
+  "tieBreak": "由實作者發射（擁有者 2026-10-18 指派 Gemini 實作、Codex 複審、Grok 掃描；實作者自己起不了時改問裁示者或照下一格記錄未執行）",
+  "fallback": "沒有任何一方起得了時（G4），由實作者在 PR說明的「### 複審後掃」下逐字寫「未執行：<原因>」並轉正式；掃得起但掃不成時，由掃描發射者（現況實作者）寫「未執行：<原因>」、轉正式也由它做；表定不掃的照 G1；都不擋合併",
+  "strongest": "grok-4.7",
+  "maxEffort": "xhigh",
+  "source": "Grok CLI",
+  "command": "node tools/review-launch.js --grok-exec --mode scan --cwd {scanTree} --model {model} --reasoning-effort {effort} --prompt-file {promptFile} --out {outFile}"
+ },
+ "platform": {
+  "name": "GitHub",
+  "project": "teacherjung/next-advantage",
+  "clearEnv": [
+   "GH_REPO",
+   "GH_HOST"
+  ],
+  "operations": {
+   "change": [
+    "gh",
+    "pr",
+    "view",
+    "{change}",
+    "-R",
+    "{project}",
+    "--json",
+    "number,title,body,baseRefName,headRefName,headRefOid,state,isDraft,isCrossRepository,autoMergeRequest,changedFiles,author",
+    "--jq",
+    "{id:(.number|tostring),title:.title,body:.body,baseBranch:.baseRefName,headBranch:.headRefName,headSha:.headRefOid,state:.state,isDraft:.isDraft,isCrossRepo:.isCrossRepository,autoMergeOn:(.autoMergeRequest!=null),changedFileCount:(.changedFiles|tostring),author:.author.login}"
+   ],
+   "openChanges": [
+    "gh",
+    "api",
+    "--paginate",
+    "repos/{project}/pulls?state=open&per_page=100",
+    "--jq",
+    "[.[]|{id:(.number|tostring),baseBranch:.base.ref,headBranch:.head.ref,headSha:.head.sha,isDraft:.draft,author:.user.login}]"
+   ],
+   "comments": [
+    "gh",
+    "api",
+    "--paginate",
+    "repos/{project}/issues/{change}/comments?per_page=100",
+    "--jq",
+    "[.[]|{id:(.id|tostring),author:.user.login,body:.body,createdAt:.created_at}]"
+   ],
+   "changedFiles": [
+    "gh",
+    "api",
+    "--paginate",
+    "repos/{project}/pulls/{change}/files?per_page=100",
+    "--jq",
+    "[.[]|{path:.filename,status:.status,previousPath:(.previous_filename // null)}]"
+   ],
+   "checks": [
+    "gh",
+    "api",
+    "--paginate",
+    "repos/{project}/commits/{sha}/check-runs?per_page=100",
+    "--jq",
+    "[.check_runs[]|{name:.name,status:.status,conclusion:.conclusion,completedAt:.completed_at,producer:(if .app then (.app.id|tostring) else null end)}]"
+   ],
+   "requiredChecks": [
+    "gh",
+    "api",
+    "repos/{project}/branches/{branch}/protection/required_status_checks",
+    "--jq",
+    "[.checks[]|{name:.context,producer:(if (.app_id // -1) < 0 then null else (.app_id|tostring) end)}]"
+   ],
+   "branchSha": [
+    "gh",
+    "api",
+    "repos/{project}/git/ref/heads/{branch}",
+    "--jq",
+    "{sha:.object.sha}"
+   ],
+   "repoTree": [
+    "gh",
+    "api",
+    "repos/{repo}/git/trees/{ref}?recursive=1",
+    "--jq",
+    "if .truncated then error(\"平台把檔案清單截斷了\") else [.tree[]|select(.type==\"blob\")|{path:.path,sha:.sha}] end"
+   ],
+   "repoFile": [
+    "gh",
+    "api",
+    "repos/{repo}/contents/{path}?ref={ref}",
+    "--jq",
+    "{content:(.content|@base64d)}"
+   ],
+   "markReady": [
+    "node",
+    "-e",
+    "process.stderr.write('實跑：這個平台動作刻意封住，合併一律走 mergeCommand\\n');process.exit(97)",
+    "{change}"
+   ],
+   "merge": [
+    "node",
+    "-e",
+    "process.stderr.write('實跑：這個平台動作刻意封住，合併一律走 mergeCommand\\n');process.exit(97)",
+    "{change}"
+   ],
+   "allComments": [
+    "gh",
+    "api",
+    "--paginate",
+    "repos/{project}/issues/comments?per_page=100",
+    "--jq",
+    "[.[]|{id:(.id|tostring),author:.user.login,body:.body,createdAt:.created_at,change:(.issue_url|split(\"/\")|last)}]"
+   ]
+  }
+ },
+ "forbidden": {
+  "name": "未設定",
+  "servers": [
+   "deda1d5d-1ccc-4551-9617-156b9658d236"
+  ],
+  "safeServers": [
+   "12dbf356-cefb-4f87-9b92-870114879406",
+   "1765aa98-7cc3-47ce-8c73-1c9859ff4ced",
+   "1a59c906-04da-521d-bda7-7f71b9f9e01c",
+   "6f616b42-0ed8-571e-823f-ee4aca6b7ce9",
+   "a3d22476-476d-4ed9-bc5f-9b649571fcda",
+   "c60d4cf2-a841-43c3-97bc-7f3ee9023a1b",
+   "terminal",
+   "visualize",
+   "scheduled-tasks",
+   "mcp-registry",
+   "Claude_Browser",
+   "claude-in-chrome",
+   "Claude_Code_iOS_Simulator",
+   "ccd_session",
+   "ccd_view",
+   "ccd_pr",
+   "ccd_settings",
+   "ccd_host",
+   "ccd_connectors",
+   "ccd_directory",
+   "ccd_session_mgmt",
+   "ccd_sidebar",
+   "ccd_window",
+   "node_repl",
+   "computer-use",
+   "openaiDeveloperDocs"
+  ],
+  "allowedTools": [],
+  "allowlist": [
+   "get_account_balances",
+   "get_account_orders",
+   "get_account_positions",
+   "get_account_summary",
+   "get_account_trades",
+   "get_alert",
+   "get_alerts",
+   "get_combo_identifier",
+   "get_company_connections",
+   "get_company_themes",
+   "get_option_data",
+   "get_option_parameters",
+   "get_order_instructions",
+   "get_pa_allocation",
+   "get_pa_performance_all_periods",
+   "get_price_history",
+   "get_price_snapshot",
+   "get_theme_details",
+   "get_watchlist",
+   "get_watchlists",
+   "search_contracts",
+   "search_futures",
+   "search_investment_topics",
+   "whats_new",
+   "provide_customer_feedback",
+   "create_alert",
+   "update_alert",
+   "delete_alert",
+   "set_alert_status",
+   "create_watchlist",
+   "edit_watchlist",
+   "delete_watchlist"
+  ],
+  "deny": [
+   "mcp__deda1d5d-1ccc-4551-9617-156b9658d236__create_order_instruction",
+   "mcp__deda1d5d-1ccc-4551-9617-156b9658d236__delete_order_instruction",
+   "mcp__guard_canary__ping"
+  ],
+  "verbs": [
+   "create",
+   "place",
+   "submit",
+   "send",
+   "stage",
+   "preview",
+   "prepare",
+   "draft",
+   "amend",
+   "modify",
+   "edit",
+   "update",
+   "cancel",
+   "delete",
+   "execute",
+   "close",
+   "open",
+   "buy",
+   "sell",
+   "purchase",
+   "exercise",
+   "liquidate",
+   "replace",
+   "redeem",
+   "pay",
+   "withdraw",
+   "withdrawal",
+   "transfer",
+   "xfer",
+   "deposit",
+   "remit",
+   "wire",
+   "disburse",
+   "cash_out",
+   "cashout",
+   "encash",
+   "sweep",
+   "repay"
+  ],
+  "nouns": [
+   "order",
+   "trade",
+   "position",
+   "instruction",
+   "stock",
+   "share",
+   "security",
+   "securities",
+   "etf",
+   "option",
+   "future",
+   "bond",
+   "asset",
+   "fund",
+   "crypto",
+   "coin",
+   "locate",
+   "invoice",
+   "bill",
+   "cash",
+   "money",
+   "transfer",
+   "withdrawal",
+   "payment",
+   "payout",
+   "wallet",
+   "cheque",
+   "payee",
+   "loan",
+   "settlement"
+  ],
+  "readPrefixes": [
+   "get",
+   "list",
+   "search",
+   "fetch",
+   "read",
+   "query",
+   "view",
+   "show",
+   "describe",
+   "has",
+   "check",
+   "retrieve",
+   "export",
+   "download"
+  ],
+  "patterns": [
+   "(^|_)(convert|exchange|swap)_\\w*?(currenc|fund|money|cash|asset|crypto|coin|stock|share|securit)"
+  ],
+  "patternsReadSafe": [
+   "(^|_)(move|send)_(fund|money|cash|asset|securit[a-z]*|stock|share|crypto|coin)s?(_|$)",
+   "(^|_)(create|place|submit|send|stage|preview|prepare|draft|amend|modify|edit|update|cancel|delete|execute|close|open|buy|sell|purchase|exercise|liquidate|replace|redeem|pay)_?\\w*?securit[a-z]*s?(_|$)",
+   "(^|_)securit[a-z]*s?_(create|place|submit|send|stage|preview|prepare|draft|amend|modify|edit|update|cancel|delete|execute|close|open|buy|sell|purchase|exercise|liquidate|replace|redeem|pay)(_|$)",
+   "(^|_)(convert|swap)_(currenc[a-z]*|fund|money|cash|asset|crypto|coin|stock|share|securit[a-z]*)s?(_|$)",
+   "(^|_)(transfer|withdraw(al)?|deposit|remit(tance)?|payout|disburse(ment)?|payment|wire)s?(_|$)"
+  ]
+ },
+ "acceptance": {
+  "tiers": [
+   {
+    "id": "免驗收",
+    "action": "套件倉庫沒有畫面、部署或要重啟的程式：合併後不需擁有者驗收；改動在同步進使用專案那一支照該專案的分級驗收"
+   }
+  ],
+  "families": [
+   {
+    "pattern": "^",
+    "tier": "免驗收"
+   }
+  ],
+  "unknownTier": "免驗收"
+ },
+ "risk": {
+  "families": [
+   {
+    "pattern": "^README\\.md$",
+    "tier": "低"
+   },
+   {
+    "pattern": "^AGENTS\\.md$",
+    "tier": "低"
+   },
+   {
+    "pattern": "^BACKLOG\\.md$",
+    "tier": "低"
+   },
+   {
+    "pattern": "^cases/",
+    "tier": "低"
+   },
+   {
+    "pattern": "^(rules\\.json|RULES\\.md|GLOSSARY\\.md|MACHINES\\.md)$",
+    "tier": "高"
+   },
+   {
+    "pattern": "^(tools|tests|templates|manual|docs)/",
+    "tier": "高"
+   },
+   {
+    "pattern": "^kit-only/",
+    "tier": "高"
+   },
+   {
+    "pattern": "^(settings\\.json|PROJECT-SETTINGS\\.md)$",
+    "tier": "高"
+   },
+   {
+    "pattern": "^(\\.github/|package(-lock)?\\.json$|\\.node-version$|\\.gitignore$)",
+    "tier": "高"
+   }
+  ],
+  "raise": [
+   "改到「金額」、「資料存取」、「機密」、「判準」、「禁區」或「閘」的做法（只是提到這些字不算）",
+   "刪掉或放寬「既有考題」的行為檢查"
+  ]
+ },
+ "reviewTiers": {
+  "高": {
+   "full": "每一輪",
+   "diffOnly": "不適用",
+   "afterPassFix": "全審",
+   "scan": "掃"
+  },
+  "中": {
+   "full": "第 1〜7 輪",
+   "diffOnly": "第 8 輪起",
+   "afterPassFix": "只核差異",
+   "scan": "掃"
+  },
+  "低": {
+   "full": "第 1〜3 輪",
+   "diffOnly": "第 4 輪起",
+   "afterPassFix": "只核差異",
+   "scan": "不掃"
+  }
+ },
+ "fastLane": {
+  "ai": {
+   "files": [
+    "^BACKLOG\\.md$",
+    "^cases/[^/]+\\.md$"
+   ],
+   "commentOnly": [
+    "^tools/.+\\.js$",
+    "^tests/.+\\.js$"
+   ],
+   "never": [
+    "^tools/(forbidden-tools|guard-copy|canary-server|claude-pin)\\.js$",
+    "^tests/(forbidden-tools|forbidden-defaults|guard-copy|guard-copy-claude|canary-server|claude-pin|placement)\\.test\\.js$",
+    "^tests/helpers/guard-rig\\.js$"
+   ]
+  }
+ },
+ "reviewers": [
+  {
+   "participant": "Claude",
+   "strongest": "claude-fable-5-1",
+   "second": "claude-opus-5-5",
+   "maxEffort": "max",
+   "autoMode": "Ultracode",
+   "source": "Claude CLI",
+   "launch": "送審產生器 node tools/review-launch.js <編號> --reviewer <識別值> 照下一格的樣板印出填好的那一行；為什麼這樣寫見 README.md「本倉庫自己怎麼合併」的「送審」那一項",
+   "command": "cd {reviewTree} && claude -p \"$(cat {promptFile})\" --model {model} --effort {effort} --permission-mode dontAsk --setting-sources user,project --add-dir {mutationCopy} --verbose --output-format json --allowedTools 'Read,Grep,Glob,Bash(node --test *),Bash(npm --prefix {mutationCopy} test *),Bash(git diff *),Bash(git log *),Bash(git show *),Bash(git rev-parse HEAD),Bash(git -C {mutationCopy} rev-parse HEAD),Bash(git -C {mutationCopy} status --porcelain),Bash(git -C {mutationCopy} diff),Bash(gh pr view *),Bash(gh pr diff *),Bash(gh pr checks *),Bash(gh run view *),Bash(gh run list *),Bash(gh pr comment {change} *),Edit(/{mutationCopy}/**),Workflow' --disallowedTools 'Write,NotebookEdit,WebFetch,WebSearch,Edit(/{reviewTree}/**),Bash(gh pr merge *),Bash(gh pr edit *),Bash(gh pr close *),Bash(gh pr review *),Bash(gh pr ready *),Bash(git push *),Bash(git commit *),Bash(git checkout *),Bash(git switch *),Bash(git stash *),Bash(git worktree *),Bash(git fetch *),Bash(npm install *),Bash(npm ci *),Bash(npx *),Bash(node -e *)' < /dev/null > {outFile}",
+   "machine": "放行清單以外的指令一律被拒（不跳出詢問）；Edit 工具改不了審查樹、只准改突變副本；不讀主目錄的本機設定檔",
+   "promptOnly": "放行的指令仍可能寫檔（例如 git diff 的 --output），副本裡改了程式再跑考題＝能跑任意程式，所以審查樹唯讀靠提示；讀檔的禁令管不到考題程式自己讀檔；助手被拒時最後的輸出看不到，要逐筆搜「has been denied」",
+   "verified": "2026-10-03 玩具資料夾、便宜模型；本倉庫沒實跑過"
+  },
+  {
+   "participant": "Codex",
+   "strongest": "gpt-6-astra",
+   "second": "gpt-6-sol",
+   "maxEffort": "max",
+   "autoMode": "ultra（這一檔會自動派助手）",
+   "source": "codex CLI",
+   "launch": "送審產生器 node tools/review-launch.js <編號> --reviewer <識別值> 照下一格的樣板印出填好的那一行；為什麼這樣寫見 README.md「本倉庫自己怎麼合併」的「送審」那一項",
+   "command": "codex exec -m {model} -c model_reasoning_effort='\"{effort}\"' -c approval_policy='\"never\"' -s workspace-write -c sandbox_workspace_write.network_access=true -C {reviewTree} -o {outFile} - < {promptFile}",
+   "machine": "樣板帶 approval_policy＝never，申請提權一律不准（不帶就照本機設定檔自動核准）；-o {outFile} 只把最後結論寫入 {outFile}（不含命令列工具進度雜訊），審完由外殼 --post 先核對審查樹與突變副本乾淨、HEAD 沒變、標頭與小標合規，才代貼結論",
+   "promptOnly": "審查樹與系統暫存區在執行期間可寫，唯讀靠提示與審後 --post／--close 的樹乾淨核對；設定檔預設推理是 low，指令漏帶就靜默降級；唯讀沙箱配 --add-dir 突變副本（2026-10-07 實測）連副本、暫存區、網路都被擋，不能拿來讓審查樹唯讀",
+   "verified": "2026-10-03 本倉庫 #30 兩輪；2026-10-07 #49 r1 用產生器印的指令（帶 approval_policy＝never）跑一輪；2026-10-19 #112、#113 實跑通過"
+  },
+  {
+   "participant": "Grok",
+   "strongest": "grok-4.7",
+   "second": "未設定",
+   "maxEffort": "xhigh",
+   "autoMode": "自動選模",
+   "source": "Grok CLI",
+   "launch": "送審產生器 node tools/review-launch.js <編號> --reviewer <識別值> 照下一格的樣板印出填好的那一行；審完由外殼 --post 核對樹乾淨與標頭後代貼結論；詳見 README.md「本倉庫自己怎麼合併」",
+   "command": "node tools/review-launch.js --grok-exec --mode review --cwd {reviewTree} --mutation-copy {mutationCopy} --model {model} --reasoning-effort {effort} --prompt-file {promptFile} --out {outFile}",
+   "machine": "經 tools/review-launch.js --grok-exec 以預設拒絕（(version 1)(deny default)(import \"system.sb\")）之 macOS Seatbelt 規則與本機受控認證轉送通道執行：啟動前先跑隔離預檢（確認可讀盒內目錄、可寫 tmp 且核心攔截寫入 worktree／mutation/.git／prompt.md，並確認讀不到宿主 auth.json、$HOME、/private/tmp、/Users/Shared、/opt/homebrew/var、/Library/Application Support、/usr/local 且攔截非轉送器本機連接埠；預檢失敗即拒絕啟動）；盒內獨立 Git 副本僅抓取受審 HEAD、基底與提示 diff 提及的提交（不帶其他本機分支物件）；真實 auth.json 維持在沙盒程序與子程序之外，盒內僅寫入白名單 6 欄與當場隨機假權杖 DUMMY-SCAN-TOKEN-*，對外網路僅准連線本機轉送器單一連接埠並驗端點白名單後代換真實權杖轉送 cli-chat-proxy.grok.com；執行後以純檔案系統快照（lstat＋SHA-256，不在宿主執行 git）核對盒內 worktree 與 mutation/.git 未變動，且無未授權請求與憑證或認證私密欄位外流（DLP），再由外殼 --post／--scan-post 代貼",
+   "promptOnly": "file-read-metadata 放行供 node／git 解析路徑（可 stat 得知路徑存在與否但核心禁止讀內容與列目錄）；轉送器容許拒絕 GET /、GET /v1/bundle/archive、GET /v1/subagents/bundle（皆回 403 不外送）；審查樹與突變副本最終乾淨再由 --post／--close 二次核對；輸出零不代表通過或已貼文",
+   "verified": "2026-10-20 本機 grok 1.0.62 搭配 tools/review-launch.js --grok-exec（deny-default Seatbelt ＋ 本機受控認證通道 ＋ 啟動前預檢 ＋ DLP）實測通過"
+  },
+  {
+   "participant": "Gemini",
+   "strongest": "gemini-3.1-pro",
+   "second": "gemini-3-flash",
+   "maxEffort": "high",
+   "autoMode": "auto-model",
+   "source": "Gemini CLI",
+   "launch": "送審產生器 node tools/review-launch.js <編號> --reviewer <識別值> 照下一格的樣板印出填好的那一行；審完由外殼 --post 核對樹乾淨與標頭後代貼結論；詳見 README.md「本倉庫自己怎麼合併」",
+   "command": "cd {reviewTree} && GEMINI_EFFORT={effort} gemini --model {model} --approval-mode plan --include-directories {mutationCopy} -p \"$(cat {promptFile})\" > {outFile}",
+   "machine": "先 cd {reviewTree} 固定進入審查樹，--approval-mode plan 限制在唯讀規劃模式並以 --include-directories {mutationCopy} 納入突變副本；審完由外殼 --post 先核對審查樹與突變副本乾淨、HEAD 沒變、標頭與小標合規，才代貼結論",
+   "promptOnly": "CLI 旗標未開放獨立調整推理強度（{effort} 以環境變數 GEMINI_EFFORT 傳入，實際推理由模型預設承接）；plan 模式下若需在突變副本實際改檔跑突變測試，改由外殼或提示引導",
+   "verified": "2026-10-20 本機 gemini CLI 旗標、cwd 切換與唯讀模式核對"
+  }
+ ],
+ "reviewLaunch": {
+  "changeLink": "https://github.com/{project}/pull/{change}",
+  "commentLink": "https://github.com/{project}/pull/{change}#issuecomment-{comment}",
+  "postComment": "gh pr comment {change} -R {project} --body-file <你寫好的結論檔>",
+  "copyTest": "npm --prefix {mutationCopy} test -- <考題檔>"
+ },
+ "ignoreLists": [
+  {
+   "file": ".gitignore",
+   "patterns": [
+    "node_modules/",
+    ".DS_Store"
+   ]
+  }
+ ],
+ "checks": {
+  "commands": [
+   [
+    "node",
+    "--test"
+   ]
+  ],
+  "mainWorktree": "未設定",
+  "indexAnchors": [
+   "未設定"
+  ],
+  "prepareWorktree": []
+ },
+ "gates": [
+  {
+   "name": "待裁（本支貼的 ❓ 都配到 ⚖️ 或 🚫）",
+   "rules": "A5",
+   "command": "node",
+   "args": [
+    "tools/gates/check-pending-rulings.js"
+   ],
+   "state": "已安裝未啟用"
+  },
+  {
+   "name": "複審結論聯集（有沒有未撤銷的阻擋、有沒有對目前版本的通過）",
+   "rules": "A2、F4、F5",
+   "command": "node",
+   "args": [
+    "tools/gates/check-review-verdicts.js"
+   ],
+   "state": "已安裝未啟用"
+  },
+  {
+   "name": "協作欄位（四欄齊全、實作者不等於複審者）",
+   "rules": "A2、E1",
+   "command": "node",
+   "args": [
+    "tools/gates/check-collab-fields.js"
+   ],
+   "state": "已安裝未啟用"
+  },
+  {
+   "name": "堆疊（底是主幹、上面沒有疊別支）",
+   "rules": "H2",
+   "command": "node",
+   "args": [
+    "tools/gates/check-stacked.js"
+   ],
+   "state": "已安裝未啟用"
+  },
+  {
+   "name": "真考卷（必要檢查最新場次真的跑過且成功）",
+   "rules": "H3",
+   "command": "node",
+   "args": [
+    "tools/gates/check-checks-really-ran.js"
+   ],
+   "state": "已安裝未啟用"
+  },
+  {
+   "name": "跨PR試合併（與每支以主幹為底的開著PR真合起來跑三關）",
+   "rules": "H4",
+   "command": "node",
+   "args": [
+    "tools/gates/check-cross-merge.js"
+   ],
+   "state": "已安裝未啟用"
+  }
+ ],
+ "mergeCommand": {
+  "command": "gh",
+  "args": [
+   "pr",
+   "merge",
+   "{change}",
+   "-R",
+   "{project}",
+   "--squash",
+   "--delete-branch",
+   "--match-head-commit",
+   "{sha}",
+   "--body",
+   "Reviewed-By: {reviewer}\nMerged-By: {merger}"
+  ]
+ },
+ "machines": [
+  {
+   "name": "平台介面（閘、待裁清單與下游落後問平台的十二個動作，答案形狀不合就不放行）",
+   "rules": "E5、H1",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "合併指令（依序跑完登記的閘，任一道紅就停）",
+   "rules": "H1",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "協作欄位閘（四欄齊全、實作者不等於複審者）",
+   "rules": "A2、D3、E1",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "結論聯集閘（阻擋只有同一位能解除、放行只認指定那一位對目前版本的通過）",
+   "rules": "F4、F5、F7",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "禁區攔截器（判斷一份，接上鉤子的每一家 AI 都呼叫它；沒接的那一家＝靠自覺）",
+   "rules": "B1",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "忽略清單一致考題（登記的每一份忽略檔跟生效的樣式一字不差）",
+   "rules": "B4、E7",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "推送前鉤子範本＋三關執行器（讀設定的三關、前後驗工作資料夾（樹））",
+   "rules": "E2",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "雲端三關與協作欄位閘的範本",
+   "rules": "E3",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "清版本控制環境變數的共用實作（GIT_ 前綴整族清）",
+   "rules": "E4",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "閘的退出路徑與進入點行為題（每一道閘的考題各有「真的跑一遍指令」與「問不到＝退 2」）",
+   "rules": "E5",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "檔名考題（已追蹤路徑只用可見 ASCII；例外名單寫死、只出不進）",
+   "rules": "E6",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "合併閘登記對帳題（磁碟上的閘 vs 設定登記的閘）",
+   "rules": "H1",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "堆疊閘（底必須是主幹、不可以有別支疊在上面）",
+   "rules": "H2",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "真考卷閘（必過檢查在那顆版本上真的跑過且成功）",
+   "rules": "H3",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "跨PR試合併閘（與每支以主幹為底的開著PR真合起來跑三關）",
+   "rules": "H4",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "驗收分級工具（路徑家族表住設定；只算不擋）",
+   "rules": "H6",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "本文長度考題",
+   "rules": "K2",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "案例簿考題＋索引產生器",
+   "rules": "K1、K2",
+   "state": "未移植",
+   "verified": "",
+   "since": "—"
+  },
+  {
+   "name": "共用檔清單（釘住套件版本；套件的檔只在套件改，同步前先查專案有沒有自己改過）",
+   "rules": "D5、K1",
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
+  },
+  {
+   "name": "專案設定產生器",
+   "rules": "K1",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "範本存在與固定小標考題",
+   "rules": "E1、G3",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "路標考題（帶記號的引號路標要指得到）",
+   "rules": "K3",
+   "state": "已啟用",
+   "verified": ""
+  },
+  {
+   "name": "待裁清單工具（掃整個專案的留言；只列不擋）",
+   "rules": "D1、I3",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "待裁閘（本支貼的 ❓ 還沒配到 ⚖️ 或 🚫 就不放行；判斷用待裁清單工具那一份）",
+   "rules": "A5",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "風險分級工具（合併前依檔案算風險級別、印出複審與掃描分級表那一列，只算不擋）",
+   "rules": "D4",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "舊文字掃描（列出這支刪掉或改掉的字串還出現在哪，只列不擋）",
+   "rules": "K5",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "開工印待辦（列出待辦清單裡提到這支改到的檔的那幾條，只列不擋）",
+   "rules": "F6",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "進度摘要檢查（摘要每則的形狀、兩個時間、沒動的線、大小、附件條號、已合併對不對得上平台，只列不擋）",
+   "rules": "J5",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "本週成果產生器（最近七天合併進主幹的 PR 照日期列成摘要那一節，--write 才換掉那一節）",
+   "rules": "J5",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "下游落後（套件這一邊印出登記的使用專案落後幾支、哪些共用檔不同、設定少哪些欄位與機器列，只列不擋）",
+   "rules": "K1",
+   "state": "已安裝未啟用",
+   "verified": ""
+  },
+  {
+   "name": "整理清單（列出可以收的分支、工作樹、暫存資料夾的舊審查樹、stash，只列不刪）",
+   "rules": "D2",
+   "state": "已安裝未啟用",
+   "verified": ""
+  }
+ ]
+}

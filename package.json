@@ -1,0 +1,10 @@
+{
+  "name": "next-advantage",
+  "version": "0.1.0",
+  "private": true,
+  "description": "What's worth learning, building, and owning in the age of AI?",
+  "scripts": {
+    "test": "node --test",
+    "checks": "node tools/run-checks.js"
+  }
+}

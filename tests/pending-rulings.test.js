@@ -1,0 +1,574 @@
+// 守待裁清單（規矩 D1、I1〜I3）。它不是閘；它讓裁示者與 AI 都不必翻留言串就知道還欠哪些答案。
+//
+// 邊界與原因：
+//   ①問裁示者的三種留痕只認範本的形狀：問／裁示／撤回；日期要是真的日子（驗收留痕見⑭）；
+//   ②裁示要由裁示者的帳號貼、要有原話那一行；別人貼的、缺原話的＝疑似，不關題；
+//   ③撤回要有三選一的理由（附依據）與自報句；缺一＝疑似；
+//   ④配對：裁示或撤回要引到原 ❓ 的留言編號、在引用區塊以外、而且比 ❓ 晚；開頭那一段若有帶錨點的網址只認第一個網址錨點（忽略後續網址與裸編號），純數字編號不認裸寫；引在引用區塊裡不算；先貼的不算；
+//   ⑤已裁與已撤回一定印出來、附配對；長得像但形狀不合＝疑似；
+//   ⑥裁示者沒填、平台問不到＝退 2；不擋任何事（沒有退 1）；掃**整個專案**的留言（allComments），題目所屬的PR關了照樣列、
+//     裁示貼在別支PR上照樣配得起來（搬家驗屋 09-13：原本只掃開著的PR，真語料 12 題裡 4 題會從清單消失）；
+//   ⑦三種留痕都只採計登記的貼文帳號（r1 Medium⑧：外人不可以撤掉待裁、外人的問也不入；驗收留痕同樣，見⑭）；
+//   ⑧轉述者要是登記的識別值、不帶記號；藏在 HTML 註解裡的原話行與網址不算；引用區塊的懶續行也算引用（r1 Medium⑨）；
+//     原話、撤回理由、自報句、配對只讀開頭那一段（r5 之後）：碰到引用、圍欄、註解等特殊行就停，疑似的原因附停在第幾行；
+//     第一行讀原文第一個非空行；留痕標題不在第一行＝疑似；行內程式碼裡提到記號照常判；
+//   ⑨讀哪一段只有一份定義（r2 Medium③）：原話與配對放在程式碼圍欄、引用的懶續行裡都不算；
+//   ⑩時間用時間值比（r2 Medium④）：比問題早的異時區裁示不關題；時間讀不出＝退 2、不移出待裁；
+//   ⑪時間沒帶時區也不收（r3 High①）：同一份輸入在不同執行時區要判一樣；
+//   ⑫圍欄裡的註解符號不可以改寫外層結構（r3 Medium②）：交錯的註解與圍欄、沒關閉的註解都不算生效；
+//     圍欄開頭行後面的「<!--」也屬於圍欄（r4 Medium②）。
+//   ⑭驗收留痕（H6；擁有者 2026-10-07 裁）：形狀合的另列成「驗收留痕」並印出來，不進待裁、不算疑似、引到 ❓ 的編號也不關題；
+//     日期假的、少原話行、不是登記帳號貼的、第一行像但形狀不合、標題不在第一行＝疑似；別的打勾標題不算像。
+//   ⑮真 CLI 長輸出經管線（pipe）與普通檔案 fd 逐位元組一致：超過 64 KiB 管線緩衝時自然排空後才結束，不因提早 process.exit 截短；
+//     成功退 0、失敗與管線寫入錯誤（EPIPE 等）退 2（刻意沒有 1）。
+// ⚠️ 守不到的：整個專案的留言有沒有給齊（分頁收齊是那條登記指令的責任）；已裁是推導不是事實；原話只驗形狀。
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { spawnSync, spawn } = require('node:child_process');
+const { gitEnv } = require('../tools/git-env.js');
+const { run, evaluate, deciderOf, cites, realDate, readPart, cliArgsProblem, RULES_SHOWN } = require('../tools/pending-rulings.js');
+const { excerpt, read: readRules } = require('../tools/build-rules.js');
+const { PlatformError } = require('../tools/platform.js');
+const { runInCopy, unfilled } = require('./helpers/kit-copy.js');
+
+const D = { id: 'Boss', account: 'boss-acct', ids: ['Boss', 'Alpha'], accounts: ['boss-acct', 'ai-acct'] };
+let n = 0;
+// 時間用 Date.UTC 算：第 60 則以後若照舊把編號直接寫進「秒」，會變成不存在的 00:00:60，被時間契約判讀不出（整份退 2）
+const c = (body, over = {}) => ({ id: `c${++n}`, author: 'ai-acct', createdAt: new Date(Date.UTC(2026, 8, 13, 0, 0, n)).toISOString(), change: '7', body, ...over });
+const ask = (title = '要不要做') => c(`## ❓ 待裁（2026-09-13）：${title}\n選項：甲／乙\n建議：甲`);
+const ruling = (askId, over = {}) => c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n落點：https://x/pull/7#issuecomment-${askId}`, { author: 'boss-acct', ...over });
+const withdraw = (askId) => c(`## 🚫 撤回（2026-09-13）：不用問了\n撤回理由：題目依附的東西沒了（那支變更已關）\nAlpha 撤回、Boss 未回；他隨時可以要我重問\nhttps://x/pull/7#issuecomment-${askId}`);
+
+test('①②④基準：問了沒回＝還沒回；裁示者引到編號＝已裁；別人貼的裁示＝疑似、不關題', () => {
+  const q = ask();
+  assert.equal(evaluate([q], D).open.length, 1);
+  const r = evaluate([q, ruling(q.id)], D);
+  assert.equal(r.open.length, 0); assert.equal(r.ruled.length, 1); assert.equal(r.ruled[0].by.author, 'boss-acct');
+  const fake = evaluate([q, ruling(q.id, { author: 'ai-acct' })], D);
+  assert.equal(fake.open.length, 1, '別人貼的裁示不可以關題');
+  assert.ok(fake.near.some((x) => x.why.includes('不是裁示者的帳號')));
+});
+
+test('②裁示缺原話那一行＝疑似；識別值不是裁示者的＝不認；日期不是真的日子＝疑似', () => {
+  const q = ask();
+  const noQuote = c('## ⚖️ Boss 裁示（2026-09-13）：選甲\n落點 https://x#issuecomment-' + q.id, { author: 'boss-acct' });
+  assert.equal(evaluate([q, noQuote], D).open.length, 1);
+  const wrongId = c(`## ⚖️ Other 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, wrongId], D).open.length, 1);
+  const badDate = c(`## ⚖️ Boss 裁示（2026-99-99）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}`, { author: 'boss-acct' });
+  const r = evaluate([q, badDate], D);
+  assert.equal(r.open.length, 1); assert.ok(r.near.some((x) => x.why.includes('日期')));
+  assert.equal(realDate('2026-02-30'), false); assert.equal(realDate('2026-02-28'), true);
+  assert.equal(realDate('not-a-date'), false, '形狀不對也是假日期（這一格在流程裡走不到，但函式是公開的）');
+});
+
+test('③撤回：理由三選一附依據、自報句，缺一＝疑似；齊了＝已撤回（不是已裁）', () => {
+  const q = ask();
+  const ok = evaluate([q, withdraw(q.id)], D);
+  assert.equal(ok.open.length, 0); assert.equal(ok.withdrawn.length, 1); assert.equal(ok.ruled.length, 0);
+  const noReason = c(`## 🚫 撤回（2026-09-13）：x\nAlpha 撤回、Boss 未回；他隨時可以要我重問\n${q.id}`);
+  assert.equal(evaluate([q, noReason], D).open.length, 1);
+  const badReason = c(`## 🚫 撤回（2026-09-13）：x\n撤回理由：不想問了（沒依據）\nAlpha 撤回、Boss 未回；他隨時可以要我重問\n${q.id}`);
+  assert.equal(evaluate([q, badReason], D).open.length, 1);
+  const emptyBasis = c(`## 🚫 撤回（2026-09-13）：x\n撤回理由：問題本身問錯了（）\nAlpha 撤回、Boss 未回；他隨時可以要我重問\n${q.id}`);
+  assert.equal(evaluate([q, emptyBasis], D).open.length, 1, '依據不可以是空的');
+  const noSelf = c(`## 🚫 撤回（2026-09-13）：x\n撤回理由：問題本身問錯了（重複）\n${q.id}`);
+  assert.equal(evaluate([q, noSelf], D).open.length, 1);
+});
+
+test('④配對：引在引用區塊裡不算；先貼的不算；編號要整個對上不是子字串；只認第一個網址錨點、不認裸數字編號（#51）', () => {
+  const q = ask();
+  const quoted = ruling('x'); quoted.body = `## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n> 見 ${q.id}`;
+  assert.equal(evaluate([q, quoted], D).open.length, 1, '引用區塊裡的編號不算在回答它');
+  const early = ruling(q.id); early.createdAt = '2026-09-12T00:00:00Z';
+  assert.equal(evaluate([q, early], D).open.length, 1, '比問題早的裁示不算');
+  assert.equal(cites('see c12 here', 'c1'), false, '子字串不算（後面接字）');
+  assert.equal(cites('see 9c1 here', 'c1'), false, '子字串不算（前面接字）——只釘後面那格的話，前面那道邊界拿掉也不會紅');
+  assert.equal(cites('see c1 here', 'c1'), true);
+  assert.equal(cites('https://x/pull/7#issuecomment-5560311732', '5560311732'), true, '網址尾碼算');
+  assert.equal(cites('另外三則 5560311732 他還沒回', '5560311732'), false, '純數字編號不認裸寫（#51）');
+  const multi = '原題：https://x/pull/7#issuecomment-5560311732\n操作化：另外 https://x/pull/7#issuecomment-5560311733 與 c99 他還沒回';
+  assert.equal(cites(multi, '5560311732'), true, '第一個網址錨點算');
+  assert.equal(cites(multi, '5560311733'), false, '第二個網址錨點不算（#51）');
+  assert.equal(cites(multi, 'c99'), false, '有網址錨點時忽略後續裸編號（#51）');
+  const q2 = ask('第二題');
+  const q3 = ask('第三題');
+  const r1Only = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n原 ❓：https://x/pull/7#issuecomment-${q.id}\n操作化：另外 https://x/pull/7#issuecomment-${q2.id} 與 ${q3.id} 他還沒回`, { author: 'boss-acct' });
+  const res = evaluate([q, q2, q3, r1Only], D);
+  assert.deepEqual(res.ruled.map((x) => x.ask.id), [q.id]);
+  assert.deepEqual(res.open.map((x) => x.id), [q2.id, q3.id]);
+  // r2 R8：兩個網址以「、」或「;」緊接且無空白時，不可跨過第一個 # 誤配到後一題
+  for (const sep of ['、', ';', '，', ',']) {
+    const tight = `原題：https://x/pull/1#issuecomment-${q.id}${sep}https://x/pull/2#issuecomment-${q2.id}（後者未答）`;
+    assert.equal(cites(tight, q.id), true, `以「${sep}」相連無空白時，第一題應命中`);
+    assert.equal(cites(tight, q2.id), false, `以「${sep}」相連無空白時，第二題不可誤中`);
+    const tightRuling = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${tight}`, { author: 'boss-acct', change: '1' });
+    const crossEval = evaluate([{ ...q, change: '1' }, { ...q2, change: '2' }, tightRuling], D);
+    assert.deepEqual(crossEval.ruled.map((x) => x.ask.id), [q.id], `跨 PR 以「${sep}」緊接時只關第一題`);
+    assert.deepEqual(crossEval.open.map((x) => x.id), [q2.id], `跨 PR 以「${sep}」緊接時第二題維持待裁`);
+  }
+  // r5〜r6 R10：自訂平台網址錨點前綴（如 #comment-<編號>、#comment:<編號>、#comment.<編號>、#comment/<編號>、#note_<編號>）同樣只認第一個網址錨點、並在該錨點內依完整編號邊界配對
+  for (const prefix of ['comment-', 'comment:', 'comment.', 'comment/', 'note_', 'issuecomment-', 'c-', '']) {
+    const customSingle = `原 ❓：https://platform.example/pr/7#${prefix}5560311732`;
+    assert.equal(cites(customSingle, '5560311732'), true, `#${prefix}5560311732 單一網址應命中`);
+    assert.equal(cites(customSingle, '556031173'), false, `#${prefix}5560311732 不得命中前綴子字串`);
+    const customMulti = `原 ❓：https://platform.example/pr/7#${prefix}5560311732\n操作化：另外 https://platform.example/pr/7#${prefix}5588918432 與 5599999999 他還沒回`;
+    assert.equal(cites(customMulti, '5560311732'), true, `#${prefix} 第一個網址錨點應命中`);
+    assert.equal(cites(customMulti, '5588918432'), false, `#${prefix} 第二個網址錨點不可誤中`);
+    assert.equal(cites(customMulti, '5599999999'), false, `#${prefix} 後方裸數字不可誤中`);
+    const qNum1 = { ...ask('自訂錨點第一題'), id: '5560311732', change: '7' };
+    const qNum2 = { ...ask('自訂錨點第二題'), id: '5588918432', change: '7' };
+    const customRuling = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${customMulti}`, { author: 'boss-acct', change: '7' });
+    const customEval = evaluate([qNum1, qNum2, customRuling], D);
+    assert.deepEqual(customEval.ruled.map((x) => x.ask.id), ['5560311732'], `#${prefix} evaluate 應只關第一題`);
+    assert.deepEqual(customEval.open.map((x) => x.id), ['5588918432'], `#${prefix} evaluate 第二題維持待裁`);
+  }
+  // r9 R10：大寫網址 scheme（HTTPS://、Http://）與大小寫混合雙網址同樣只認第一個網址錨點，且無空白串接大寫第二網址不跨過（清單 run 與待裁閘 gateRun 整合）
+  const { gateRun: pendingGateRun } = require('../tools/gates/check-pending-rulings.js');
+  const gateSettings = { participants: [{ role: '裁示者（人）', id: 'Boss', account: 'boss-acct' }, { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' }] };
+  const mkGatePlatform = (all) => ({
+    ask(op, args) {
+      if (op === 'change') return { id: String(args.change), headSha: 'abc' };
+      if (op === 'allComments') return all;
+      throw new Error(`unexpected ${op}`);
+    },
+  });
+  const qUp1 = { ...ask('大寫首網址第一題'), id: '5560311732', change: '7' };
+  const qUp2 = { ...ask('小寫次網址第二題'), id: '5560311733', change: '8' };
+  const upperSingleBody = '原題：HTTPS://github.com/teacherjung/ai-collab-kit/pull/7#issuecomment-5560311732';
+  assert.equal(cites(upperSingleBody, '5560311732'), true, '大寫 HTTPS:// 單一首網址應命中');
+  const upperSingleRuling = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${upperSingleBody}`, { author: 'boss-acct', change: '7' });
+  const upperSingleEval = evaluate([qUp1, upperSingleRuling], D);
+  assert.deepEqual(upperSingleEval.ruled.map((x) => x.ask.id), ['5560311732'], '單一大寫首網址應將第一題列已裁');
+  assert.deepEqual(upperSingleEval.open, []);
+  const upperSingleList = run({ settings: gateSettings, platform: mkGatePlatform([qUp1, upperSingleRuling]) });
+  assert.equal(upperSingleList.code, 0);
+  assert.match(upperSingleList.lines.join('\n'), /還沒回：0 則[\s\S]*已裁：1 則/u);
+  assert.equal(pendingGateRun('7', { settings: gateSettings, platform: mkGatePlatform([qUp1, upperSingleRuling]) }).code, 0, '單一大寫首網址待裁閘應放行');
+
+  const upperMixedBody = '原題：HTTPS://github.com/teacherjung/ai-collab-kit/pull/7#issuecomment-5560311732\n其他題未答：https://github.com/teacherjung/ai-collab-kit/pull/8#issuecomment-5560311733';
+  assert.equal(cites(upperMixedBody, '5560311732'), true, '大寫首網址＋小寫次網址時，第一題應命中');
+  assert.equal(cites(upperMixedBody, '5560311733'), false, '大寫首網址＋小寫次網址時，第二題不可誤中');
+  const upperMixedRuling = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${upperMixedBody}`, { author: 'boss-acct', change: '7' });
+  const upperMixedEval = evaluate([qUp1, qUp2, upperMixedRuling], D);
+  assert.deepEqual(upperMixedEval.ruled.map((x) => x.ask.id), ['5560311732'], '混合大小寫雙網址只關第一題');
+  assert.deepEqual(upperMixedEval.open.map((x) => x.id), ['5560311733'], '混合大小寫雙網址第二題維持待裁');
+  const upperMixedList = run({ settings: gateSettings, platform: mkGatePlatform([qUp1, qUp2, upperMixedRuling]) });
+  assert.equal(upperMixedList.code, 0);
+  assert.match(upperMixedList.lines.join('\n'), /還沒回：1 則[\s\S]*留言 5560311733[\s\S]*已裁：1 則[\s\S]*留言 5560311732/u);
+  assert.equal(pendingGateRun('7', { settings: gateSettings, platform: mkGatePlatform([qUp1, qUp2, upperMixedRuling]) }).code, 0, '混合大小寫雙網址：首網址所屬 PR #7 待裁閘應放行');
+  assert.equal(pendingGateRun('8', { settings: gateSettings, platform: mkGatePlatform([qUp1, qUp2, upperMixedRuling]) }).code, 1, '混合大小寫雙網址：次網址所屬 PR #8 待裁閘必須擋下');
+
+  const gluedUpperSecond = '原題：https://x/pull/7#issuecomment-5560311732HTTPS://x/pull/8#issuecomment-5560311733';
+  assert.equal(cites(gluedUpperSecond, '5560311732'), true, '無空白緊接大寫 HTTPS:// 次網址時，第一題應命中');
+  assert.equal(cites(gluedUpperSecond, '5560311733'), false, '無空白緊接大寫 HTTPS:// 次網址時，第二題不可誤中');
+});
+
+test('⑤長得像但不合形狀＝疑似，並說原因', () => {
+  const near = c('## ❓ 待裁：忘了寫日期');
+  const r = evaluate([near], D);
+  assert.equal(r.open.length, 0); assert.equal(r.near.length, 1);
+  assert.equal(evaluate([c('普通留言')], D).near.length, 0);
+});
+
+test('⑥裁示者沒填＝退 2；平台問不到＝退 2；算出來＝退 0，掃整個專案的留言（含已關的變更）', () => {
+  assert.equal(deciderOf({ participants: [{ role: '裁示者（人）', id: 'Boss', account: '未設定' }] }), null);
+  assert.equal(run({ settings: { participants: [] }, platform: { ask() { throw new Error('不該問'); } } }).code, 2);
+  const settings = { participants: [{ role: '裁示者（人）', id: 'Boss', account: 'boss-acct' }, { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' }] };
+  assert.equal(run({ settings, platform: { ask() { throw new PlatformError('x'); } } }).code, 2);
+  const q = { ...ask(), change: '5' };   // 題目掛在 5 號，而 5 號已經合併關掉了
+  const asked = [];
+  const platform = { ask(op) { asked.push(op); if (op !== 'allComments') throw new Error(`不該問 ${op}`); return [q]; } };
+  const r = run({ settings, platform });
+  assert.equal(r.code, 0);
+  assert.deepEqual(asked, ['allComments'], '一次問整個專案，不是逐支問開著的PR');
+  assert.match(r.lines.join('\n'), /還沒回：1 則/u, '所屬的PR關了，題目還在');
+  assert.match(r.lines.join('\n'), /含已關的變更/u);
+  // 裁示貼在別支PR上（原專案真語料的形狀：問在 #577、裁在 #578）照樣配得起來
+  const answered = run({ settings, platform: { ask: () => [q, { ...ruling(q.id), change: '6' }] } });
+  assert.match(answered.lines.join('\n'), /還沒回：0 則/u);
+  assert.match(answered.lines.join('\n'), /已裁：1 則/u);
+  assert.throws(() => run({ settings, platform: { ask() { throw new TypeError('程式寫錯'); } } }), TypeError);
+  assert.equal(runInCopy('tools/pending-rulings.js').status, 2, '空白設定的複本：設定未填');
+});
+
+test('⑦外人的撤回關不了題、外人的問不入待裁；都列成疑似', () => {
+  const q = ask();
+  const outsiderWithdraw = withdraw(q.id); outsiderWithdraw.author = 'outsider';
+  const r = evaluate([q, outsiderWithdraw], D);
+  assert.equal(r.open.length, 1, '外人撤不掉');
+  assert.ok(r.near.some((x) => x.why.includes('不是登記的貼文帳號')));
+  const outsiderAsk = ask(); outsiderAsk.author = 'outsider';
+  const r2 = evaluate([outsiderAsk], D);
+  assert.equal(r2.open.length, 0); assert.equal(r2.near.length, 1);
+});
+
+test('⑧原話署名包粗體＝不合；原話行與網址藏在 HTML 註解＝不算；寫在引用（含懶續行）之後＝不算', () => {
+  const q = ask();
+  const bold = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，**Alpha** 轉述）：**「甲」**\n${q.id}`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, bold], D).open.length, 1, '包粗體的署名範本明說不合');
+  const unknownId = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Nobody 轉述）：**「甲」**\n${q.id}`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, unknownId], D).open.length, 1, '轉述者要是登記的識別值');
+  const hidden = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n<!--\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}\n-->`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, hidden], D).open.length, 1, '註解裡的東西畫面上看不見，不算');
+  const lazy = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n> 引用別人說的\n見 ${q.id} 這一則`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, lazy], D).open.length, 1, '緊接在 > 後面沒有空行隔開的行仍是引用');
+  assert.equal(readPart('a\n\nb\n> c\nd'), 'a\n\nb', '讀到第一個引用就停，之後的 d 也不讀');
+  const afterBlank = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n> 引用\n\n${q.id}`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, afterBlank], D).open.length, 1, '網址寫在引用之後＝讀不到（r5 之後只讀開頭那一段；要寫在引用前面）');
+  const beforeQuote = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}\n\n> 引用`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, beforeQuote], D).open.length, 0, '對照組：網址在引用前面，配對成立');
+});
+
+test('⑨原話與配對放在程式碼圍欄裡＝不算；原話放在引用的懶續行＝不算（讀哪一段只有一份定義）', () => {
+  const q = ask();
+  const fenced = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n\`\`\`md\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}\n\`\`\``, { author: 'boss-acct' });
+  assert.equal(evaluate([q, fenced], D).open.length, 1, '圍欄裡的原話與網址是範例，不算');
+  const quotedQuote = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n> 引用範例\n原話（對話中，Alpha 轉述）：**「甲」**\n\n${q.id}`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, quotedQuote], D).open.length, 1, '原話在引用的懶續行裡，不算；網址雖在最外層也不夠');
+  const longFence = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n\`\`\`\`\n\`\`\`\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}\n\`\`\`\`\n`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, longFence], D).open.length, 1, '四反引號圍欄裡的三反引號不是關閉');
+});
+
+test('⑩時間用時間值比：異時區但其實較早的裁示不關題；時間讀不出＝退 2 且不移出待裁', () => {
+  const q = ask(); q.createdAt = '2026-09-13T02:00:00Z';
+  const earlier = ruling(q.id); earlier.createdAt = '2026-09-13T03:00:00+02:00';   // ＝01:00Z，比問題早
+  const r = evaluate([q, earlier], D);
+  assert.equal(r.open.length, 1, '字串序會排錯，時間值不會');
+  const later = ruling(q.id); later.createdAt = '2026-09-13T05:00:00+02:00';   // ＝03:00Z，比問題晚
+  assert.equal(evaluate([q, later], D).open.length, 0);
+  const broken = ruling(q.id); broken.createdAt = 'not-a-time';
+  const settings = { participants: [{ role: '裁示者（人）', id: 'Boss', account: 'boss-acct' }, { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' }] };
+  const platform = { ask: () => [q, broken] };
+  const out = run({ settings, platform });
+  assert.equal(out.code, 2);
+  assert.match(out.lines.join('\n'), /時間讀不出/u);
+});
+
+test('⑪沒帶時區的裁示不收＝退 2；同一份輸入在 TZ=UTC 與 TZ=Asia/Taipei 判一樣', () => {
+  const q = ask(); q.createdAt = '2026-09-13T02:00:00Z';
+  const noTz = ruling(q.id); noTz.createdAt = '2026-09-13T03:00:00';
+  const settings = { participants: [{ role: '裁示者（人）', id: 'Boss', account: 'boss-acct' }, { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' }] };
+  const platform = { ask: () => [q, noTz] };
+  assert.equal(run({ settings, platform }).code, 2);
+  // r4 Medium①：不存在的日子會被轉換器進位成較晚的真日子，「較晚」的裁示就把問題關掉
+  const qMar = { ...q, createdAt: '2026-03-01T02:00:00Z' };
+  const impossible = { ...ruling(q.id), createdAt: '2026-02-30T03:00:00Z' };
+  assert.equal(run({ settings, platform: { ask: () => [qMar, impossible] } }).code, 2, '不存在的日子＝時間讀不出＝退 2、不移出待裁');
+  const script = `const { evaluate } = require(${JSON.stringify(require.resolve('../tools/pending-rulings.js'))});
+    const D = ${JSON.stringify(D)};
+    const q = ${JSON.stringify(q)};
+    const r = ${JSON.stringify({ ...ruling(q.id), createdAt: '2026-09-13T03:00:00Z' })};
+    const bad = ${JSON.stringify({ ...ruling(q.id), createdAt: '2026-09-13T03:00:00' })};
+    process.stdout.write(JSON.stringify([evaluate([q, r], D).open.length, evaluate([q, bad], D).unsure ? 'unsure' : 'ok']));`;
+  const outs = ['UTC', 'Asia/Taipei'].map((tz) => spawnSync(process.execPath, ['-e', script], { encoding: 'utf8', env: { ...process.env, TZ: tz } }).stdout);
+  assert.equal(outs[0], outs[1], `兩個時區結果不同：${outs.join(' | ')}`);
+  assert.deepEqual(JSON.parse(outs[0]), [0, 'unsure']);
+});
+
+test('⑫圍欄裡的註解符號不可以改寫外層結構；沒關閉的註解一路不算', () => {
+  const q = ask();
+  const payload = `原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}`;
+  const interleaved = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n${['```md', '<!--', '```', '-->', '```', payload, '```'].join('\n')}`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, interleaved], D).open.length, 1, '第二段圍欄裡的原話是範例，不算');
+  const unclosed = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n<!--\n${payload}`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, unclosed], D).open.length, 1, '沒關閉的註解裡什麼都不算');
+  for (const f of ['```', '~~~']) {
+    const r4 = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n${[`${f}md <!--`, 'code', f, `${f}md`, '-->', payload, f].join('\n')}`, { author: 'boss-acct' });
+    const r = evaluate([q, r4], D);
+    assert.equal(r.open.length, 1, `${f}：r4 反例——第二段圍欄裡的原話是範例，不關題`);
+    assert.equal(r.ruled.length, 0);
+  }
+});
+
+test('⑬只讀開頭那一段（r5 之後）：原話與網址寫在特殊行之後＝疑似並指出行號；寫完之後才出現的不影響；標題不在第一行＝疑似', () => {
+  const q = ask();
+  const commentAfter = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}\n<!-- 附註 -->`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, commentAfter], D).open.length, 0, '原話與網址寫完之後的註解改不了前面');
+  // r5 反例三：標題下先引用上一輪、再寫原話與網址——畫面看得見，但不照「緊接在標題下」寫：不關題、列疑似、指出行號
+  const quoteFirst = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n> 上輪的問題\n## 本輪\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}`, { author: 'boss-acct' });
+  const r = evaluate([q, quoteFirst], D);
+  assert.equal(r.open.length, 1);
+  assert.ok(r.near.some((x) => x.id === quoteFirst.id && /第 2 行就停了/u.test(x.why)), r.near.map((x) => x.why).join(' / '));
+  const hiddenHeader = c(`<!--\n## ⚖️ Boss 裁示（2026-09-13）：選甲\n-->\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}`, { author: 'boss-acct' });
+  const h = evaluate([q, hiddenHeader], D);
+  assert.equal(h.open.length, 1, '第一行不是標題＝不是裁示');
+  assert.ok(h.near.some((x) => x.id === hiddenHeader.id && /不在第一行/u.test(x.why)), '標題不在第一行也不可以靜靜不見');
+  assert.equal(evaluate([q, c('前言\n  ## ⚖️ 縮排的範例標題')], D).near.length, 0, '縮排的標題是範例，不列疑似');
+  const askWithComment = c('## ❓ 待裁（2026-09-13）：要不要做\n<!-- 備註 -->');
+  assert.equal(evaluate([askWithComment], D).open.length, 1, '問只讀第一行，內文的特殊行不影響它在待裁裡');
+  // r6 Medium①：網址放在表格分隔列以下（行內程式碼裡的豎線把格子切多、網址那格被丟掉）＝不配對；沒配到又停過＝疑似、指出第 5 行
+  const inTable = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n\n| 驗證命令 | 原題 |\n| --- | --- |\n| \`printf x | cat\` | ${q.id} |`, { author: 'boss-acct' });
+  const t = evaluate([q, inTable], D);
+  assert.equal(t.open.length, 1, '表格裡的網址不配對');
+  assert.ok(t.near.some((x) => x.id === inTable.id && /沒有配到/u.test(x.why) && /第 5 行就停了/u.test(x.why)), t.near.map((x) => x.why).join(' / '));
+  // r7 Medium①：單欄表格的分隔列可以沒有豎線，網址在那格被丟掉＝一樣不配對
+  for (const sep of [':---', '---:', ':---:']) {
+    const oneCol = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n\n| 操作紀錄 |\n${sep}\n| \`printf x | cat\`；原題：${q.id} |`, { author: 'boss-acct' });
+    const o = evaluate([q, oneCol], D);
+    assert.equal(o.open.length, 1, `${sep}：單欄表格裡的網址不配對`);
+    assert.ok(o.near.some((x) => x.id === oneCol.id && /第 5 行就停了/u.test(x.why)), `${sep}：${o.near.map((x) => x.why).join(' / ')}`);
+  }
+  const beforeTable = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}\n\n| a | b |\n| --- | --- |\n| \`x | y\` | z |`, { author: 'boss-acct' });
+  assert.equal(evaluate([q, beforeTable], D).open.length, 0, '對照組：網址寫在表格前面＝配對成立');
+  // r6 Low②：原話在引用前、網址在引用後＝不配對；以前靜靜留在待裁，現在列疑似並指出第 3 行
+  const urlAfterQuote = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n> 上輪建議\n\n${q.id}`, { author: 'boss-acct' });
+  const u = evaluate([q, urlAfterQuote], D);
+  assert.equal(u.open.length, 1);
+  assert.ok(u.near.some((x) => x.id === urlAfterQuote.id && /第 3 行就停了/u.test(x.why)), u.near.map((x) => x.why).join(' / '));
+  // r7 Low②：同一題的第二則補充裁示配得到那一題、只是不是代表——後面有引用也不可以列成「沒有配到」
+  const first = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}`, { author: 'boss-acct' });
+  const second = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}\n\n補充實作依據：\n> 沿用選甲`, { author: 'boss-acct' });
+  for (const order of [[q, first, second], [second, first, q]]) {
+    const s2 = evaluate(order, D);
+    assert.equal(s2.ruled.length, 1, '已裁一則（代表是較早那則）');
+    assert.equal(s2.near.length, 0, `補充裁示配得到，不列疑似：${s2.near.map((x) => x.why).join(' / ')}`);
+  }
+  assert.equal(evaluate([q, second], D).ruled.length, 1, '對照組：第二則單獨存在時照常配對');
+  const earlyWithQuote = { ...second, id: 'early1', createdAt: '2026-09-12T00:00:00Z' };
+  assert.ok(evaluate([q, earlyWithQuote], D).near.some((x) => x.id === 'early1' && /沒有配到/u.test(x.why)), '引到的問題比它晚＝不算配到（先後要看）');
+  const unmatchedNoStop = c('## ⚖️ Boss 裁示（2026-09-13）：選甲\n原話（對話中，Alpha 轉述）：**「甲」**\n別的變更上的題', { author: 'boss-acct' });
+  assert.equal(evaluate([q, unmatchedNoStop], D).near.length, 0, '對照組：沒配到、但讀的那段沒停＝照舊不列（可能在回答已關掉的PR上的題）');
+  const tagInTitle = c('## ❓ 待裁（2026-09-13）：要不要用 <details> 收合');
+  assert.equal(evaluate([tagInTitle], D).open.length, 1, '第一行讀原文、不經過「開頭那一段」：標題裡有特殊記號也照樣是問');
+  const mention = c(`## ⚖️ Boss 裁示（2026-09-13）：選甲\n背景：\`<!--\` 那個記號的事\n原話（對話中，Alpha 轉述）：**「甲」**\n${q.id}`, { author: 'boss-acct' });
+  const m = evaluate([q, mention], D);
+  assert.equal(m.open.length, 0, '行內程式碼裡提到記號不是特殊行、原話照常算');
+  assert.equal(m.near.length, 0);
+});
+
+test('指令列不收參數：舊習慣的 --all／--pr 不可以被靜靜忽略（搬家前準備）', () => {
+  assert.equal(cliArgsProblem([]), null, '對照組：不給參數正常跑');
+  for (const argv of [['--all'], ['--pr', '5']]) assert.match(cliArgsProblem(argv), /不收任何參數/u, argv.join(' '));
+  const r = runInCopy('tools/pending-rulings.js', ['--pr', '5']);
+  assert.equal(r.status, 2);
+  assert.match(r.stdout, /不收任何參數/u, '真的跑一遍：在問平台之前就停');
+});
+
+test('⑬疑似照時間新到舊排、逐則只印最近 8 則，其餘收成一行（總數與最早日期照印）', () => {
+  // 為什麼要釘：這一欄的用途是「今天寫壞的那一則要被看見」。照留言原本的順序印時最舊的在最上面、
+  // 今天那一則排在最後，這一欄等於失效（第一個使用專案真語料 38 則）。裁示者 2026-09-20 裁 a＝只改印法。
+  // ⚠️ 餵進去的順序**刻意打亂**（不是照時間遞增）：不然「把陣列倒過來取 8 則」這種沒有真的看時間的寫法
+  //    也會全綠（複審後掃第 2 條）。第二輪才加進疑似的那一族（沒配到任何比它早的問題）本來就不照時間排在尾巴。
+  const settings = { participants: [{ role: '裁示者（人）', id: 'Boss', account: 'boss-acct' }, { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' }] };
+  const nearOf = (i) => c(`## ❓ 待裁：第 ${i} 則忘了寫日期`, { createdAt: new Date(Date.UTC(2026, 7, 1 + i)).toISOString(), id: `near${i}` });
+  const order = [7, 1, 12, 4, 9, 2, 11, 5, 8, 3, 10, 6];   // 打亂：陣列順序跟時間完全無關
+  const many = order.map(nearOf);
+  const out = run({ settings, platform: { ask: () => many } }).lines.join('\n');
+  assert.match(out, /疑似（長得像留痕但不採計）：12 則，以下列最近 8 則/u, out);
+  const listed = out.split('\n').filter((l) => /^ {2}・\d{4}-\d{2}-\d{2}｜/u.test(l));
+  assert.equal(listed.length, 8, `逐則印的要剛好 8 則：\n${out}`);
+  // 逐則對「是哪 8 則、順序對不對」——只數行數的話，倒著取、隨便取都會過
+  const want = [12, 11, 10, 9, 8, 7, 6, 5];
+  for (const [at_, n] of want.entries()) {
+    assert.match(listed[at_], new RegExp(`第 ${n} 則`, 'u'), `第 ${at_ + 1} 行應該是第 ${n} 則（新到舊）：\n${out}`);
+  }
+  assert.match(out, /・另有 4 則（最早 2026-08-02），不逐則列/u, out);
+  assert.doesNotMatch(out, /更早/u, '收合那一行不可以說「更早」：同一秒的留言可能剛好跨過上限（r1 第 2 條）');
+  assert.doesNotMatch(out, /第 1 則|第 2 則|第 3 則|第 4 則/u, '收起來的那四則不逐則列');
+  // ⚠️ 上游 evaluate() 已經先把留言照時間**舊到新**排過，所以光靠上面那組，「把陣列倒過來」這種
+  //    沒有真的看時間的寫法也會全綠。真正分得出來的是**第二輪才 push 進疑似**的那一族
+  //    （形狀合格、卻沒配到任何比它早的問題，而且讀到一半停住）：它被接在陣列**最後面**，
+  //    跟它自己的時間無關。給它一個**很舊**的時間——照時間排會落在收合行裡，倒過來取則會排第一。
+  const strayOld = c('## ⚖️ Boss 裁示（2026-09-13）：沒配到任何題的那一族\n原話（對話中，Alpha 轉述）：**「甲」**\n> 這一行是引用，機器讀到這裡就停\nhttps://x/pull/7#issuecomment-nobody',
+    { author: 'boss-acct', createdAt: new Date(Date.UTC(2026, 6, 1)).toISOString(), id: 'stray-old' });
+  const withStray = run({ settings, platform: { ask: () => [...many, strayOld] } }).lines.join('\n');
+  assert.match(withStray, /疑似（長得像留痕但不採計）：13 則，以下列最近 8 則/u, withStray);
+  const listed2 = withStray.split('\n').filter((l) => /^ {2}・\d{4}-\d{2}-\d{2}｜/u.test(l));
+  assert.match(listed2[0], /第 12 則/u, `最新的仍要排第一（不可以因為它被接在陣列最後就排到前面）：\n${withStray}`);
+  assert.doesNotMatch(withStray.split('・另有')[0], /沒有配到任何比它早的問題/u,
+    `2026-07-01 那一則比誰都舊，要落在收合行裡、不可以逐則列：\n${withStray}`);
+  assert.match(withStray, /・另有 5 則（最早 2026-07-01），不逐則列/u, withStray);
+  // 少於上限時不印那一行、也不寫「以下列最近」
+  const few = run({ settings, platform: { ask: () => many.slice(0, 3) } }).lines.join('\n');
+  assert.match(few, /疑似（長得像留痕但不採計）：3 則\n/u, few);
+  assert.doesNotMatch(few, /以下列最近|另有/u, few);
+  assert.equal(few.split('\n').filter((l) => /^ {2}・\d{4}-\d{2}-\d{2}｜/u.test(l)).length, 3, few);
+});
+
+test('⑬b 同一秒跨過上限：照平台給的原始順序決定誰後到（逐筆核對是哪 8 則），而且不可以宣稱「更早」', () => {
+  // 複審後掃第 1 條：同一秒 9 則時，若只按時間排（差值 0、順序不變），列出的會是陣列**前** 8 則，
+  // 而剛貼的那一則（平台給在最後）反而被收進「另有」——這一欄的用途就沒了。
+  // r3 第 2 條：夾具不可以讓「標題編號／留言編號／陣列位置」同步遞增，不然按內文或編號排序的錯誤寫法也會全綠。
+  const settings = { participants: [{ role: '裁示者（人）', id: 'Boss', account: 'boss-acct' }, { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' }] };
+  const same = new Date(Date.UTC(2026, 8, 20)).toISOString();
+  // 平台順序＝same1…same9（編號遞增），標題編號刻意打亂＝按內文排序會排成另一個樣子
+  const titles = [7, 1, 9, 4, 8, 2, 6, 3, 5];
+  const nine = titles.map((t, i) => c(`## ❓ 待裁：標題 ${t} 忘了寫日期`, { createdAt: same, id: `same${i + 1}` }));
+  const out = run({ settings, platform: { ask: () => nine } }).lines.join('\n');
+  assert.match(out, /疑似（長得像留痕但不採計）：9 則，以下列最近 8 則/u, out);
+  const ids = out.split('\n').filter((l) => /^ {2}・\d{4}-\d{2}-\d{2}｜/u.test(l)).map((l) => /留言 (same\d)/u.exec(l)[1]);
+  assert.deepEqual(ids, ['same9', 'same8', 'same7', 'same6', 'same5', 'same4', 'same3', 'same2'],
+    `同一秒要照平台給的原始順序、後到的排前面（逐筆核對，不可以靠標題或編號的巧合）：\n${out}`);
+  assert.match(out, /・另有 1 則（最早 2026-09-20），不逐則列/u, out);
+  assert.doesNotMatch(out, /更早/u, `同一秒不可以說更早：\n${out}`);
+  // 正好 8 則（等於上限）：不印收合行、也不寫「以下列最近」
+  const eight = run({ settings, platform: { ask: () => nine.slice(0, 8) } }).lines.join('\n');
+  assert.match(eight, /疑似（長得像留痕但不採計）：8 則\n/u, eight);
+  assert.doesNotMatch(eight, /以下列最近|另有/u, eight);
+});
+
+test('⑬c 同一秒、兩輪疑似混在一起：決勝鍵要讀平台給的原始位置，不是它在疑似清單裡的位置', () => {
+  // r3 第 1 條（我自己引入的回歸）：疑似是分兩輪蒐集的——第二輪那一族（形狀合格、沒配到任何比它早的問題、
+  // 讀到一半停住）被接在清單**尾巴**，跟它自己的時間與平台順序都無關。拿「在疑似清單裡的位置」當決勝鍵，
+  // 平台最後給的那一則（今天剛貼、剛寫壞的）反而會被擠出逐則清單。
+  const settings = { participants: [{ role: '裁示者（人）', id: 'Boss', account: 'boss-acct' }, { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' }] };
+  const same = new Date(Date.UTC(2026, 8, 20)).toISOString();
+  const stray = (i) => c(`## ⚖️ Boss 裁示（2026-09-20）：第二輪那一族 ${i}\n原話（對話中，Alpha 轉述）：**「甲」**\n> 引用，機器讀到這裡就停\nhttps://x/pull/7#issuecomment-nobody`,
+    { author: 'boss-acct', createdAt: same, id: `R${i}` });
+  const eight = Array.from({ length: 8 }, (_, i) => stray(i + 1));           // 平台先給這 8 則（第二輪才進疑似）
+  const newest = c('## ❓ 待裁：今天剛寫壞的這一則', { createdAt: same, id: 'N9' });   // 平台最後給這一則（第一輪就進疑似）
+  const out = run({ settings, platform: { ask: () => [...eight, newest] } }).lines.join('\n');
+  assert.match(out, /疑似（長得像留痕但不採計）：9 則，以下列最近 8 則/u, out);
+  const ids = out.split('\n').filter((l) => /^ {2}・\d{4}-\d{2}-\d{2}｜/u.test(l)).map((l) => /留言 (N9|R\d)/u.exec(l)[1]);
+  assert.equal(ids[0], 'N9', `平台最後給的那一則要排第一（它今天剛貼）：\n${out}`);
+  assert.deepEqual(ids, ['N9', 'R8', 'R7', 'R6', 'R5', 'R4', 'R3', 'R2'], `逐筆核對：\n${out}`);
+  assert.match(out, /・另有 1 則（最早 2026-09-20），不逐則列/u, out);
+});
+
+test('⑭驗收留痕：形狀合的另列、印出來，不進待裁也不算疑似；寫壞的列疑似；別的打勾標題不算像', () => {
+  const accept = (over = {}, title = '總覽六行全打勾（照裁示的版面）') => c(`## ✅ 驗收（2026-10-07）：${title}\n原話（對話中，Alpha 轉述）：**「沒有跳出」**\n照「怎麼驗收」第 1、2 步。`, over);
+  const q = ask();
+  const ok = accept();
+  const citing = c(`## ✅ 驗收（2026-10-07）：引到題目編號\n原話（對話中，Alpha 轉述）：**「好」**\n${q.id}`);
+  const r = evaluate([q, ok, citing], D);
+  assert.deepEqual(r.accepted.map((x) => [x.id, x.date, x.title]), [[ok.id, '2026-10-07', '總覽六行全打勾（照裁示的版面）'], [citing.id, '2026-10-07', '引到題目編號']],
+    '標題帶「裁示」兩個字也要認成驗收留痕，不落到疑似');
+  assert.equal(r.near.length, 0);
+  assert.deepEqual(r.open.map((x) => x.id), [q.id], '驗收留痕不是裁示：引到 ❓ 的編號也不關題');
+  assert.equal(r.ruled.length, 0);
+  const settings = { participants: [{ role: '裁示者（人）', id: 'Boss', account: 'boss-acct' }, { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' }] };
+  const out = run({ settings, platform: { ask: () => [q, ok] } }).lines;
+  const at = out.findIndex((l) => l.startsWith('驗收留痕：'));
+  assert.ok(at >= 0 && out[at].startsWith('驗收留痕：1 則'), out.join('\n'));
+  assert.equal(out[at + 1], `  ・2026-10-07｜總覽六行全打勾（照裁示的版面）｜變更 7｜留言 ${ok.id}`, out.join('\n'));
+  assert.match(run({ settings, platform: { ask: () => [q] } }).lines.join('\n'), /^驗收留痕：0 則/mu, '沒有也要印 0 則，看得出它有在數');
+
+  const bad = [
+    [c('## ✅ 驗收（2026-02-30）：日期假的\n原話（對話中，Alpha 轉述）：**「好」**'), '日期'],
+    [c('## ✅ 驗收（2026-10-07）：少原話\n他說好。'), '原話'],
+    [c('## ✅ 驗收（2026-10-07）：外人貼的\n原話（對話中，Alpha 轉述）：**「好」**', { author: 'stranger' }), '登記的貼文帳號'],
+    [c('## ✅驗收（2026-10-07）：少一個空白\n原話（對話中，Alpha 轉述）：**「好」**'), '長得像驗收留痕'],
+    [c('前言一句\n## ✅ 驗收（2026-10-07）：標題不在第一行\n原話（對話中，Alpha 轉述）：**「好」**'), '不在第一行'],
+  ];
+  for (const [x, why] of bad) {
+    const b = evaluate([x], D);
+    assert.equal(b.accepted.length, 0, x.body);
+    assert.equal(b.near.length, 1, x.body);
+    assert.ok(b.near[0].why.includes(why), `${x.body}\n→ ${b.near[0].why}`);
+  }
+  assert.equal(evaluate([c('## ✅ 版本 22 實證通過\n雲端補上了')], D).near.length, 0, '別的打勾標題不是驗收留痕，也不算像');
+});
+
+test('指令列在輸出後面印 D1 與 I 節原文（開工看待裁、怎麼問、問了就等、怎麼留痕）；只多印、退出碼不變', () => {
+  assert.deepEqual(RULES_SHOWN, ['D1', 'I']);
+  const copy = runInCopy('tools/pending-rulings.js', ['--pr', '5'], { files: ['rules.json'] });
+  assert.equal(copy.status, 2, copy.stdout + copy.stderr);
+  assert.match(copy.stdout, /^待裁清單不收任何參數/u, '工具自己的輸出照舊在前面');
+  assert.ok(copy.stdout.includes(`\n${excerpt(readRules(), RULES_SHOWN)}\n`), `沒印出 D1 與 I 節原文：\n${copy.stdout}`);
+});
+
+test('⑮真 CLI 長輸出經管線與普通檔案 fd 逐位元組一致；成功退 0、失敗與管線寫入錯誤退 2（刻意沒有 1）', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pending-rulings-pipe-'));
+  try {
+    const kitRoot = path.join(__dirname, '..');
+    fs.cpSync(path.join(kitRoot, 'tools'), path.join(dir, 'tools'), { recursive: true });
+    fs.copyFileSync(path.join(kitRoot, 'rules.json'), path.join(dir, 'rules.json'));
+    const comments = Array.from({ length: 2000 }, (_, i) => ({
+      id: String(100000 + i),
+      author: 'ai-acct',
+      createdAt: new Date(Date.UTC(2026, 8, 13, 0, Math.floor(i / 60), i % 60)).toISOString(),
+      change: String((i % 20) + 1),
+      body: `## ❓ 待裁（2026-09-13）：長輸出管線完整性第 ${String(i + 1).padStart(4, '0')} 題（避免超過 64 KiB 管線緩衝未排空即 process.exit 截短）\n選項：甲／乙\n建議：甲`,
+    }));
+    fs.writeFileSync(path.join(dir, 'comments.json'), JSON.stringify(comments));
+    fs.writeFileSync(path.join(dir, 'dump-comments.js'), "const fs = require('node:fs'); process.stdout.write(fs.readFileSync('comments.json'));\n");
+    const baseSettings = unfilled();
+    const settings = {
+      ...baseSettings,
+      owner: 'Boss',
+      participants: [
+        { role: '裁示者（人）', id: 'Boss', account: 'boss-acct' },
+        { role: 'AI 甲', id: 'Alpha', account: 'ai-acct' },
+      ],
+      platform: {
+        ...baseSettings.platform,
+        name: 'Fake',
+        project: 'fake/repo',
+        clearEnv: [],
+        operations: {
+          ...baseSettings.platform.operations,
+          allComments: [process.execPath, 'dump-comments.js'],
+        },
+      },
+    };
+    fs.writeFileSync(path.join(dir, 'settings.json'), JSON.stringify(settings));
+    const env = gitEnv();
+    delete env.NODE_TEST_CONTEXT;
+    const cli = path.join(dir, 'tools/pending-rulings.js');
+
+    // 1. 普通檔案 fd 對照組
+    const outFile = path.join(dir, 'out.txt');
+    const fd = fs.openSync(outFile, 'w');
+    let fileRes;
+    try {
+      fileRes = spawnSync(process.execPath, [cli], { cwd: dir, env, stdio: ['ignore', fd, 'pipe'] });
+    } finally {
+      fs.closeSync(fd);
+    }
+    assert.equal(fileRes.status, 0, fileRes.stderr && fileRes.stderr.toString('utf8'));
+    const fileBytes = fs.readFileSync(outFile);
+    assert.ok(fileBytes.length > 65536 * 4, `合成輸出需明顯大於 64 KiB 管線緩衝（實際 ${fileBytes.length} 位元組）`);
+    const fileText = fileBytes.toString('utf8');
+    assert.match(fileText, /^還沒回：2000 則$/mu);
+    assert.match(fileText, /長輸出管線完整性第 2000 題/u);
+    assert.ok(fileText.includes(`\n${excerpt(readRules(), RULES_SHOWN)}\n`), '檔案輸出尾端需含完整 D1 與 I 節條文');
+
+    // 2. 管線（pipe）輸出：必須與普通檔案 fd 逐位元組一致，不可只留前 65,536 位元組
+    const pipeRes = spawnSync(process.execPath, [cli], {
+      cwd: dir,
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: 10 * 1024 * 1024,
+    });
+    assert.equal(pipeRes.status, 0, pipeRes.stderr && pipeRes.stderr.toString('utf8'));
+    assert.equal(pipeRes.stdout.length, fileBytes.length, `管線輸出位元組數（${pipeRes.stdout.length}）與檔案 fd（${fileBytes.length}）不一致`);
+    assert.equal(Buffer.compare(pipeRes.stdout, fileBytes), 0, '管線輸出與檔案 fd 必須逐位元組完全相同');
+
+    // 3. 失敗退出碼維持 2（平台失敗）
+    const failSettings = {
+      ...settings,
+      platform: {
+        ...settings.platform,
+        operations: {
+          ...settings.platform.operations,
+          allComments: [process.execPath, '-e', 'process.stderr.write("boom\\n"); process.exit(1);'],
+        },
+      },
+    };
+    fs.writeFileSync(path.join(dir, 'settings.json'), JSON.stringify(failSettings));
+    const failRes = spawnSync(process.execPath, [cli], { cwd: dir, env, encoding: 'utf8' });
+    assert.equal(failRes.status, 2, `平台失敗時退出碼應為 2（實際 ${failRes.status}）`);
+    assert.match(failRes.stdout, /待裁清單：問不到平台/u);
+
+    // 4. 下游提早關閉管線（EPIPE）：不可因未處理的 stream error 退 1，也不可假綠退 0，必須退 2
+    fs.writeFileSync(path.join(dir, 'settings.json'), JSON.stringify(settings));
+    const epipeExit = await new Promise((resolve, reject) => {
+      const child = spawn(process.execPath, [cli], { cwd: dir, env, stdio: ['ignore', 'pipe', 'pipe'] });
+      let errOut = '';
+      child.stderr.on('data', (chunk) => { errOut += chunk.toString('utf8'); });
+      child.stdout.once('data', () => { child.stdout.destroy(); });
+      child.on('error', reject);
+      child.on('close', (code, signal) => resolve({ code, signal, errOut }));
+    });
+    assert.equal(epipeExit.signal, null);
+    assert.equal(epipeExit.code, 2, `下游提早關閉管線（EPIPE）應退 2、不可退 0 或 1（實際 code=${epipeExit.code}, stderr=${epipeExit.errOut}）`);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
