@@ -7,228 +7,312 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-inner">
+  <div class="app">
+    <aside class="sidebar">
       <a href="index.html" class="brand">
-        <span class="brand-badge" style="background:var(--accent);">NEXTLAB VENTURE</span>
-        <span class="brand-title">線上 AI 槓桿 × 線下實體 PBL 平台</span>
-        <span class="brand-sub">｜Next Advantage 創業實踐原型</span>
+        <div class="brand-mark">NL</div>
+        <div>
+          <div class="brand-title">NextLab OMO</div>
+          <div class="brand-subtitle">AI 槓桿 × 實體 PBL 平台</div>
+        </div>
       </a>
-      <nav class="site-switcher" aria-label="雙網頁切換">
-        <a href="index.html" class="switch-link">📊 網頁一：研究總覽與護城河分析</a>
-        <a href="venture.html" class="switch-link active">🚀 網頁二：線上×線下 PBL 創業嘗試</a>
+
+      <nav id="nav" aria-label="主導覽">
+        <div class="nav-group-label">雙網頁切換</div>
+        <a href="index.html"><span class="nav-ic" data-icon="compass"></span><span>網頁一：研究總覽</span></a>
+        <a href="venture.html" class="active"><span class="nav-ic" data-icon="rocket"></span><span>網頁二：OMO 創業嘗試</span></a>
+
+        <div class="nav-group-label" style="margin-top:10px;">創業雙視角切換</div>
+        <a href="#all" data-lens-mode="all" class="active"><span class="nav-ic" data-icon="layers"></span><span>完整雙視角總覽</span></a>
+        <a href="#lens-parent" data-lens-mode="parent"><span class="nav-ic" data-icon="users"></span><span>視角一：給家長與學員</span></a>
+        <a href="#lens-founder" data-lens-mode="founder"><span class="nav-ic" data-icon="trendingUp"></span><span>視角二：給創業者試算</span></a>
       </nav>
-    </div>
-  </header>
 
-  <main class="container">
-        <section class="hero">
-      <span class="hero-eyebrow" style="background:var(--accent-light); color:var(--accent);">AI 數位槓桿 × 實體高信任服務｜OMO Venture Prototype</span>
-      <h1>AI 負責 70% 個人化鷹架與備課追蹤，<br />真人與實體場域專注於 100% 的同儕碰撞與真實造物。</h1>
-      <p class="hero-lead">
-        這不僅是為 6〜18 歲下一代打造的<strong>「四大不可替代能力訓練場」</strong>，更是一般專業成年人無須千萬買地蓋校、也不必陷入餐飲紅海內卷，就能從零累積<strong>「品牌信任 × 同儕網路效應 × 專有 AI 教案系統」</strong>的新商業模式。
-      </p>
+      <div class="sidebar-foot">
+        <button type="button" class="btn-ghost" data-open-trial-modal="預約週末 Demo Day 體驗">✨ 模擬預約體驗（跳窗）</button>
+        <a href="index.html" class="btn-ghost">← 返回研究總覽頁</a>
+      </div>
+    </aside>
 
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; padding-top:0.5rem;">
-        <div class="tab-bar" role="tablist" style="margin-bottom:0;">
-          <button type="button" class="tab-btn active" data-lens-mode="all">🔍 同時檢視雙視角（完整模式）</button>
-          <button type="button" class="tab-btn" data-lens-mode="parent">👨‍👩‍👧 視角一：給家長與學員的產品價值頁</button>
-          <button type="button" class="tab-btn" data-lens-mode="founder">📈 視角二：給創業者的商業模式與財務試算</button>
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">AI 負責 70% 個別化鷹架與備課，真人與實體場域專注 100% 同儕碰撞與造物</h1>
+          <div class="page-sub">NextLab OMO PBL 創客平台｜為 6〜18 歲下一代打造的「四大能力訓練場」× 一般成年人高護城河輕資產創業原型</div>
+        </div>
+        <div class="page-actions">
+          <button type="button" class="btn-ghost" data-info-key="socratic-ai">🤖 蘇格拉底 AI 防代寫機制</button>
+          <button type="button" class="btn-ghost" data-info-key="destination-venue">🏠 目的型場地抗漲租策略</button>
+          <button type="button" class="btn" data-open-trial-modal="預約週末實體工作坊體驗">✨ 預約體驗／索取創業藍圖</button>
         </div>
       </div>
-    </section>
 
-        <div id="lens-parent">
-      <section class="section-block">
-        <div class="section-header">
-          <span class="section-step">視角一｜給家長與下一代（Parent & Student Product Page）</span>
-          <h2 class="section-title">為什麼孩子上了這麼多課，遇到真實問題還是只會「等標準答案」？</h2>
-          <p class="section-desc">
-            在 AI 5 秒鐘就能解完考卷的時代，單向聽講與刷題正在失去價值。NextLab 結合<strong>平日線上 AI 蘇格拉底副駕</strong>與<strong>週末線下 6〜8 人實體工作坊</strong>，讓孩子在真實專題中養成 AI 奪不走的超能力。
-          </p>
+      <section class="forest-scene-summary" aria-label="OMO 模式三大引擎總覽">
+        <div class="forest-scene-summary-item">
+          <div class="forest-scene-summary-kicker">
+            <span>🤖 平日線上（每週 2 次 × 20 分鐘）</span>
+            <button type="button" class="info-link" data-info-key="socratic-ai"><span class="info-pill">?</span>防代寫</button>
+          </div>
+          <div class="forest-scene-summary-value">蘇格拉底 AI 專題副駕</div>
+          <div class="forest-scene-summary-note">絕不直接給標準答案；透過反詰提問引導孩子拆解問題、抓出 AI 破綻，並自動彙整卡關點給實體導師。</div>
         </div>
-
-        <div class="grid-2" style="margin-bottom:1.5rem;">
-          <div class="card">
-            <span class="ep-badge ep-fact">平日線上（每週 2 次 × 20 分鐘）</span>
-            <h3 style="font-size:1.22rem; margin:0.55rem 0;">🤖 AI 專題副駕（Socratic Co-Pilot）：只提問引導，絕不代寫答案</h3>
-            <p style="color:var(--ink-secondary); font-size:0.93rem; margin-bottom:0.85rem;">
-              一般孩子在家用 AI 常變成「直接複製貼上交作業」；我們的專屬 AI 副駕採用蘇格拉底式提問框架：
-            </p>
-            <ul class="check-list">
-              <li class="check-item"><span>🧭</span><span><strong>問題拆解鷹架：</strong>引導孩子把「我想做一個環保裝置」拆成可執行的三週小實驗。</span></li>
-              <li class="check-item"><span>🕵️</span><span><strong>抓出 AI 破綻任務：</strong>刻意在資料中埋入需要查證的盲點，訓練孩子的查核與懷疑精神。</span></li>
-              <li class="check-item"><span>📊</span><span><strong>自動同步實體導師：</strong>將孩子平日的提問深度與卡關點結構化整理，讓週末實體課一秒切入核心。</span></li>
-            </ul>
+        <div class="forest-scene-summary-item">
+          <div class="forest-scene-summary-kicker">
+            <span>🤝 週末線下（每週 1 次 × 2.5 小時）</span>
+            <button type="button" class="info-link" data-info-key="evidence-pbl"><span class="info-pill">?</span>實證</button>
           </div>
-
-          <div class="card" style="border-color:var(--primary);">
-            <span class="ep-badge ep-infer">週末線下（每週 1 次 × 2.5 小時實體小班）</span>
-            <h3 style="font-size:1.22rem; margin:0.55rem 0;">🤝 實體同儕創客工作坊 ＋ 每季真實世界 Demo Day</h3>
-            <p style="color:var(--ink-secondary); font-size:0.93rem; margin-bottom:0.85rem;">
-              現場<strong>零單向知識灌輸</strong>，100% 時間投入在螢幕無法取代的「人際碰撞与動手造物」：
-            </p>
-            <ul class="check-list">
-              <li class="check-item"><span>🛠️</span><span><strong>動手解決真實摩擦：</strong>從硬體感測器、社區訪談到原型測試，體驗「做壞 → 修正 → 跑通」的真實韌性。</span></li>
-              <li class="check-item"><span>🗣️</span><span><strong>同儕角色分工與衝突協調：</strong>在 6〜8 人小隊中練習說服隊友、處理意見不合、承擔組長或測試員責任。</span></li>
-              <li class="check-item"><span>🎤</span><span><strong>每季公開發表會（Demo Day）與能力觀測報告：</strong>面對家長與真實受眾展示成果，累積跨年度個人作品集（Portfolio）。</span></li>
-            </ul>
-          </div>
+          <div class="forest-scene-summary-value">6〜8 人實體同儕工作坊 ＋ Demo Day</div>
+          <div class="forest-scene-summary-note">現場零單向講課，100% 投入動手造物、角色分工、衝突協調與每季公開上台發表，累積跨年度作品集。</div>
         </div>
-
-                <div class="grid-3">
-          <div class="card">
-            <span class="ep-badge ep-fact">旗艦專題模組 A｜10〜13 歲</span>
-            <h4 style="font-size:1.1rem; margin:0.5rem 0;">《AI 破綻偵探社：社區真偽資訊查核指南》</h4>
-            <p style="font-size:0.88rem; color:var(--ink-secondary); margin-bottom:0.65rem;">
-              孩子組隊收集長輩群組常見的健康或生活傳言，用 AI 生成正反論點，再透過科學實驗與官方資料交叉查證，最後製作一份給社區長輩看的實體圖解手冊並現場解說。
-            </p>
-            <div style="font-size:0.82rem; font-weight:700; color:var(--primary);">核心鍛鍊：AI 查證把關力 × 同理溝通</div>
+        <div class="forest-scene-summary-item">
+          <div class="forest-scene-summary-kicker">
+            <span>🏰 創業者商業護城河</span>
+            <button type="button" class="info-link" data-info-key="destination-venue"><span class="info-pill">?</span>場地</button>
           </div>
-
-          <div class="card">
-            <span class="ep-badge ep-infer">旗艦專題模組 B｜10〜15 歲</span>
-            <h4 style="font-size:1.1rem; margin:0.5rem 0;">《家庭與校園日常痛點改造王》</h4>
-            <p style="font-size:0.88rem; color:var(--ink-secondary); margin-bottom:0.65rem;">
-              從觀察家裡或教室裡「最常讓人忘記或浪費時間的一件小事」出發，利用 AI 輔助設計流程或簡易感測提醒裝置，經過兩週真實家庭實測，拿真實改善數據上台發表。
-            </p>
-            <div style="font-size:0.82rem; font-weight:700; color:var(--primary);">核心鍛鍊：問題定義力 × 真實落地抗挫力</div>
-          </div>
-
-          <div class="card">
-            <span class="ep-badge ep-hypo">旗艦專題模組 C｜12〜18 歲</span>
-            <h4 style="font-size:1.1rem; margin:0.5rem 0;">《週末微型快閃創業與價值實驗》</h4>
-            <p style="font-size:0.88rem; color:var(--ink-secondary); margin-bottom:0.65rem;">
-              小隊在有限預算內設計一項能解決特定人群需求的實體服務或產品，用 AI 完成市場分析與視覺包裝，但在週末實體市集面對真實陌生顧客的拒絕、議價與回饋。
-            </p>
-            <div style="font-size:0.82rem; font-weight:700; color:var(--primary);">核心鍛鍊：商業護城河思維 × 團隊領導韌性</div>
-          </div>
+          <div class="forest-scene-summary-value">省 70% 後台工時 × 擺脫一樓店租綁架</div>
+          <div class="forest-scene-summary-note">目的型週末空間合作讓固定場地費佔比低於 15%；靠作品集轉換成本與家長私域口碑建立高留存飛輪。</div>
         </div>
       </section>
-    </div>
 
-        <div id="lens-founder">
-      <section class="section-block">
-        <div class="section-header">
-          <span class="section-step">視角二｜給創業者的商業模式與護城河藍圖（Founder & Venture Blueprint）</span>
-          <h2 class="section-title">為什麼「線上 AI 槓桿 × 線下實體 PBL」是一般成年人的高勝率創業模型？</h2>
-          <p class="section-desc">
-            對照第一階段研究的「學校」與「飲料餐飲店」，本模式刻意只擷取學校最具護城河的「同儕社群与家長信任」，並用 AI 與目的型場地策略避開傳統實體店面的三大死穴。
-          </p>
-        </div>
+      <div class="workspace-tabs" role="tablist" aria-label="雙視角切換">
+        <button type="button" class="workspace-tab is-active" data-lens-mode="all">🔍 同時檢視雙視角（完整模式）</button>
+        <button type="button" class="workspace-tab" data-lens-mode="parent">👨‍👩‍👧 視角一：給家長與學員的產品價值頁</button>
+        <button type="button" class="workspace-tab" data-lens-mode="founder">📈 視角二：給創業者的商業模式與財務試算</button>
+      </div>
 
-        <div class="table-wrap" style="margin-bottom:2rem;">
-          <table class="comp-table">
-            <thead>
-              <tr>
-                <th>傳統實體生意的死穴</th>
-                <th>🧋 一般餐飲／傳統才藝班的困境</th>
-                <th>🚀 NextLab OMO PBL 的結構性解套設計</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>1. 店租綁架風險</strong></td>
-                <td>依賴過路客，必須搶一樓黃金店面；生意好時房東漲租吸乾利潤。</td>
-                <td><strong>目的型到訪（Destination Service）</strong>：初期採用週末時段租用優質書店／共享空間或二樓工作室，固定場地成本佔營收 &lt;15%。</td>
-              </tr>
-              <tr>
-                <td><strong>2. 名師與缺工瓶頸</strong></td>
-                <td>傳統 PBL 極度依賴名師手工備課與寫評語，1 位老師帶滿 15 人就精疲力竭。</td>
-                <td><strong>AI 後台槓桿省下 70% 文書與備課工時</strong>：AI 自動生成專題鷹架與每週家長觀測報告草稿，導師只需錄 1 分鐘語音核對簽名，單人服務半徑擴大 2.5 倍。</td>
-              </tr>
-              <tr>
-                <td><strong>3. 平台抽成與低留存</strong></td>
-                <td>餐飲被外送抽 30%；純線上課完課率不到 15%、獲客成本極高。</td>
-                <td><strong>作品集轉換成本 ＋ Demo Day 私域裂變</strong>：孩子累積跨學期作品集與同儕夥伴，續費率高；每季發表會家長邀親友觀摩，形成零抽成的口碑獲客飛輪。</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-                <div class="grid-2">
-          <form class="card" id="unit-econ-form" onsubmit="return false;">
-            <h3 style="font-size:1.18rem; margin-bottom:0.9rem;">🧮 單點營運財務與 AI 工時槓桿互動試算器</h3>
-
-            <div class="sim-control">
-              <label for="sim-students"><span>每班小班人數（6〜10 人最佳）</span><span id="sim-students-val">8 人/班</span></label>
-              <input type="range" id="sim-students" min="4" max="12" value="8" />
-            </div>
-
-            <div class="sim-control">
-              <label for="sim-classes"><span>每週實體工作坊開班數</span><span id="sim-classes-val">4 班</span></label>
-              <input type="range" id="sim-classes" min="1" max="8" value="4" />
-            </div>
-
-            <div class="sim-control">
-              <label for="sim-fee"><span>每位學員月費（含平日 AI 副駕＋週末實體課）</span><span id="sim-fee-val">NT$ 6,800</span></label>
-              <input type="range" id="sim-fee" min="3600" max="12000" step="200" value="6800" />
-            </div>
-
-            <div class="sim-control">
-              <label for="sim-venue"><span>實體場地策略（決定固定成本與抗漲租能力）</span></label>
-              <select id="sim-venue">
-                <option value="partner" selected>階段一：週末時段租用合作空間（按班計費，零閒置租金）</option>
-                <option value="studio2f">階段二：二樓以上獨立創客工作室（月租約 NT$ 32,000）</option>
-                <option value="street1f">對照組：傳統一樓街邊店面（月租約 NT$ 85,000，高固定風險）</option>
-              </select>
-            </div>
-
-            <div class="sim-control">
-              <label for="sim-ai"><span>AI 數位槓桿導入深度（備課、進度追蹤、家長週報）</span></label>
-              <select id="sim-ai">
-                <option value="high" selected>高槓桿（AI 省下 70% 後台備課與個別週報時間）</option>
-                <option value="medium">中度輔助（AI 省下 50% 後台時間）</option>
-                <option value="low">傳統純人工（僅省 25%，老師大量時間耗在改作業寫評語）</option>
-              </select>
-            </div>
-          </form>
-
-          <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+      <div id="lens-parent">
+        <section class="card">
+          <div class="card-head">
             <div>
-              <span class="ep-badge ep-infer">單點每月營運模型預估（合理推論）</span>
-              <div class="kpi-grid" style="margin-top:0.9rem;">
-                <div class="kpi-box">
-                  <div class="kpi-label">總服務學員數</div>
-                  <div class="kpi-val" id="out-total-students">32 人</div>
-                  <div class="kpi-sub">高黏著度小班社群</div>
-                </div>
-                <div class="kpi-box">
-                  <div class="kpi-label">預估月營業額</div>
-                  <div class="kpi-val" id="out-revenue">NT$ 217,600</div>
-                  <div class="kpi-sub">零外送平台抽成</div>
-                </div>
-                <div class="kpi-box">
-                  <div class="kpi-label">預估月營業利益</div>
-                  <div class="kpi-val" id="out-profit" style="color:var(--accent);">NT$ 154,900</div>
-                  <div class="kpi-sub" id="out-margin">營業利益率 71%（損益兩平：10 人）</div>
-                </div>
-                <div class="kpi-box">
-                  <div class="kpi-label">主導師每週總工時</div>
-                  <div class="kpi-val" id="out-hours">18.5 小時/週</div>
-                  <div class="kpi-sub" id="out-saved-hours">AI 每週幫你省下 19.9 小時備課與週報工時</div>
-                </div>
-              </div>
+              <div class="card-sub">視角一｜給家長與下一代（Parent & Student Product Page）</div>
+              <h2 class="card-title">為什麼孩子上了這麼多課，遇到真實問題還是只會「等標準答案」？</h2>
+            </div>
+            <button type="button" class="btn-ghost btn-sm" data-info-key="socratic-ai">🔍 點擊查看：AI 副駕如何防止孩子直接抄答案？</button>
+          </div>
 
-              <div class="card-subtle" style="margin-top:0.5rem;">
-                <strong style="display:block; margin-bottom:0.35rem; color:var(--primary);">📌 從 0 到 1 三階段低風險落地路徑：</strong>
-                <ol style="padding-left:1.2rem; font-size:0.88rem; color:var(--ink-secondary); display:flex; flex-direction:column; gap:0.3rem;">
-                  <li><strong>第 1〜3 個月（MVP 驗證）：</strong>先開 1 班（6〜8 人），租用週末共享空間，驗證「平日 AI 提問單 ＋ 週末實體實作 ＋ Demo Day」完課率與家長口碑。</li>
-                  <li><strong>第 4〜12 個月（單點獲利）：</strong>擴展至 3〜4 班（24〜32 人），將線上 AI 副駕與家長觀測週報自動化，建立在地家長轉介紹飛輪。</li>
-                  <li><strong>第 2 年起（系統複利）：</strong>累積專有跨屆專題案例庫，培訓兼職引導教練，形成區域內難以被複製的「高信任實體社群 × AI 教學系統」護城河。</li>
-                </ol>
+          <div class="grid-2">
+            <div class="card-subtle">
+              <div class="card-head" style="margin-bottom:8px;">
+                <span class="tag info">平日線上（每週 2 次 × 20 分鐘）</span>
+                <button type="button" class="info-link" data-info-key="socratic-ai">防代寫機制 <span class="info-pill">?</span></button>
+              </div>
+              <h3 class="card-title" style="font-size:17px; margin-bottom:8px;">🤖 AI 專題副駕（Socratic Co-Pilot）：只提問引導，絕不代寫</h3>
+              <ul class="check-list">
+                <li class="check-item"><span>🧭</span><span><strong>問題拆解鷹架：</strong>引導孩子把「我想做一個環保裝置」拆成可執行的三週小實驗。</span></li>
+                <li class="check-item"><span>🕵️</span><span><strong>抓出 AI 破綻任務：</strong>刻意在資料中埋入需要查證的盲點，訓練孩子的查核與懷疑精神。</span></li>
+                <li class="check-item"><span>📊</span><span><strong>自動同步實體導師：</strong>將孩子平日的提問深度與卡關點結構化整理，讓週末實體課一秒切入核心。</span></li>
+              </ul>
+            </div>
+
+            <div class="card-subtle" style="background:linear-gradient(180deg, #fffdf6 0%, #fce7c5 100%); border-color:var(--frame);">
+              <div class="card-head" style="margin-bottom:8px;">
+                <span class="tag pos">週末線下（每週 1 次 × 2.5 小時實體小班）</span>
+                <button type="button" class="info-link" data-info-key="evidence-pbl">PBL 實證 <span class="info-pill">?</span></button>
+              </div>
+              <h3 class="card-title" style="font-size:17px; margin-bottom:8px;">🤝 實體同儕創客工作坊 ＋ 每季真實世界 Demo Day</h3>
+              <ul class="check-list">
+                <li class="check-item"><span>🛠️</span><span><strong>動手解決真實摩擦：</strong>從硬體感測器、社區訪談到原型測試，體驗「做壞 → 修正 → 跑通」的真實韌性。</span></li>
+                <li class="check-item"><span>🗣️</span><span><strong>同儕角色分工與衝突協調：</strong>在 6〜8 人小隊中練習說服隊友、處理意見不合、承擔組長或測試員責任。</span></li>
+                <li class="check-item"><span>🎤</span><span><strong>每季公開發表會（Demo Day）與能力觀測報告：</strong>面對家長與真實受眾展示成果，累積跨年度個人作品集（Portfolio）。</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card-head" style="margin-top:8px;">
+            <div>
+              <h3 class="card-title" style="font-size:16.5px;">🎯 三大旗艦 8 週專題模組（點擊按鈕可開啟 8 週詳細課綱與作品產出跳窗）</h3>
+            </div>
+          </div>
+
+          <div class="grid-3" style="margin-bottom:0;">
+            <div class="card-subtle" style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <span class="tag pos">旗艦專題模組 A｜10〜13 歲</span>
+                <h4 class="card-title" style="font-size:16px; margin:8px 0;">《AI 破綻偵探社：社區真偽資訊查核指南》</h4>
+                <p style="font-size:13px; color:var(--text-dim); margin:0 0 10px;">
+                  孩子組隊收集長輩群組常見的健康或生活傳言，用 AI 生成正反論點，再透過科學實驗與官方資料交叉查證，製作實體圖解手冊並現場解說。
+                </p>
+              </div>
+              <div>
+                <div style="font-size:12.5px; font-weight:700; color:var(--accent-ink); margin-bottom:10px;">鍛鍊：AI 查證把關力 × 同理溝通</div>
+                <button type="button" class="btn-ghost btn-sm" style="width:100%;" data-open-module="mod-a">📋 檢視 8 週課綱與產出（跳窗）</button>
+              </div>
+            </div>
+
+            <div class="card-subtle" style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <span class="tag info">旗艦專題模組 B｜10〜15 歲</span>
+                <h4 class="card-title" style="font-size:16px; margin:8px 0;">《家庭與校園日常痛點改造王》</h4>
+                <p style="font-size:13px; color:var(--text-dim); margin:0 0 10px;">
+                  從觀察家裡或教室裡「最常讓人忘記或浪費時間的一件小事」出發，利用 AI 輔助設計流程或簡易感測提醒裝置，經兩週實測後拿真實數據上台發表。
+                </p>
+              </div>
+              <div>
+                <div style="font-size:12.5px; font-weight:700; color:var(--accent-ink); margin-bottom:10px;">鍛鍊：問題定義力 × 真實落地抗挫力</div>
+                <button type="button" class="btn-ghost btn-sm" style="width:100%;" data-open-module="mod-b">📋 檢視 8 週課綱與產出（跳窗）</button>
+              </div>
+            </div>
+
+            <div class="card-subtle" style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <span class="tag warn">旗艦專題模組 C｜12〜18 歲</span>
+                <h4 class="card-title" style="font-size:16px; margin:8px 0;">《週末微型快閃創業與價值實驗》</h4>
+                <p style="font-size:13px; color:var(--text-dim); margin:0 0 10px;">
+                  小隊在有限預算內設計解決特定需求的實體服務或產品，用 AI 完成市場分析與視覺包裝，但在週末實體市集面對真實陌生顧客的拒絕與議價。
+                </p>
+              </div>
+              <div>
+                <div style="font-size:12.5px; font-weight:700; color:var(--accent-ink); margin-bottom:10px;">鍛鍊：商業護城河思維 × 團隊領導韌性</div>
+                <button type="button" class="btn-ghost btn-sm" style="width:100%;" data-open-module="mod-c">📋 檢視 8 週課綱與產出（跳窗）</button>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-    </div>
-  </main>
+        </section>
+      </div>
 
-  <footer class="footer">
-    <p>NextLab OMO PBL Platform｜Next Advantage 專案創業實踐原型（AI 數位槓桿 × 實體高信任服務）</p>
-  </footer>
+      <div id="lens-founder">
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-sub">視角二｜給創業者的商業模式與護城河藍圖（Founder & Venture Blueprint）</div>
+              <h2 class="card-title">為什麼「線上 AI 槓桿 × 線下實體 PBL」是一般成年人的高勝率創業模型？</h2>
+            </div>
+            <button type="button" class="btn" data-open-econ-modal="1">📊 檢視損益明細與三階段壓力測試（跳窗）</button>
+          </div>
 
+          <div class="table-wrap" style="margin-bottom:22px;">
+            <table class="comp-table">
+              <thead>
+                <tr>
+                  <th style="width:20%;">傳統實體生意的死穴</th>
+                  <th style="width:38%;">🧋 一般餐飲／傳統才藝班的困境</th>
+                  <th style="width:42%;">🚀 NextLab OMO PBL 的結構性解套設計</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>1. 店租綁架風險</strong></td>
+                  <td>依賴過路客，必須搶一樓黃金店面；生意好時房東漲租吸乾利潤。</td>
+                  <td>
+                    <button type="button" class="info-link" data-info-key="destination-venue"><strong>目的型到訪（Destination Service）</strong> <span class="info-pill">?</span></button>：初期採用週末時段租用優質書店／共享空間或二樓工作室，固定場地成本佔營收 &lt;15%。
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>2. 名師與缺工瓶頸</strong></td>
+                  <td>傳統 PBL 極度依賴名師手工備課與寫評語，1 位老師帶滿 15 人就精疲力竭。</td>
+                  <td>
+                    <button type="button" class="info-link" data-info-key="socratic-ai"><strong>AI 後台槓桿省下 70% 文書與備課工時</strong> <span class="info-pill">?</span></button>：AI 自動生成專題鷹架與每週家長觀測報告草稿，導師只需錄 1 分鐘語音核對簽名，單人服務半徑擴大 2.5 倍。
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>3. 平台抽成與低留存</strong></td>
+                  <td>餐飲被外送抽 30%；純線上課完課率不到 15%、獲客成本極高。</td>
+                  <td><strong>作品集轉換成本 ＋ Demo Day 私域裂變</strong>：孩子累積跨學期作品集與同儕夥伴，續費率高；每季發表會家長邀親友觀摩，形成零抽成的口碑獲客飛輪。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grid-2" style="margin-bottom:0;">
+            <form class="card-subtle" id="unit-econ-form" onsubmit="return false;">
+              <div class="card-head" style="margin-bottom:12px;">
+                <h3 class="card-title" style="font-size:16.5px;">🧮 單點營運財務與 AI 工時槓桿互動試算器</h3>
+              </div>
+
+              <div class="sim-control">
+                <label for="sim-students"><span>每班小班人數（6〜10 人最佳）</span><span id="sim-students-val">8 人/班</span></label>
+                <input type="range" id="sim-students" min="4" max="12" value="8" />
+              </div>
+
+              <div class="sim-control">
+                <label for="sim-classes"><span>每週實體工作坊開班數</span><span id="sim-classes-val">4 班</span></label>
+                <input type="range" id="sim-classes" min="1" max="8" value="4" />
+              </div>
+
+              <div class="sim-control">
+                <label for="sim-fee"><span>每位學員月費（含平日 AI 副駕＋週末實體課）</span><span id="sim-fee-val">NT$ 6,800</span></label>
+                <input type="range" id="sim-fee" min="3600" max="12000" step="200" value="6800" />
+              </div>
+
+              <div class="sim-control">
+                <label for="sim-venue"><span>實體場地策略（決定固定成本與抗漲租能力）</span></label>
+                <select id="sim-venue">
+                  <option value="partner" selected>階段一：週末時段租用合作空間（按班計費，零閒置租金）</option>
+                  <option value="studio2f">階段二：二樓以上獨立創客工作室（月租約 NT$ 32,000）</option>
+                  <option value="street1f">對照組：傳統一樓街邊店面（月租約 NT$ 85,000，高固定風險）</option>
+                </select>
+              </div>
+
+              <div class="sim-control" style="margin-bottom:0;">
+                <label for="sim-ai"><span>AI 數位槓桿導入深度（備課、進度追蹤、家長週報）</span></label>
+                <select id="sim-ai">
+                  <option value="high" selected>高槓桿（AI 省下 70% 後台備課與個別週報時間）</option>
+                  <option value="medium">中度輔助（AI 省下 50% 後台時間）</option>
+                  <option value="low">傳統純人工（僅省 25%，老師大量時間耗在改作業寫評語）</option>
+                </select>
+              </div>
+            </form>
+
+            <div style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div class="card-head" style="margin-bottom:10px;">
+                  <span class="tag pos">單點每月營運模型預估（合理推論）</span>
+                  <button type="button" class="btn-ghost btn-sm" data-open-econ-modal="1">📊 查看完整損益拆解跳窗</button>
+                </div>
+
+                <div class="kpi-row">
+                  <div class="kpi">
+                    <div class="kpi-label"><span>總服務學員數</span><span class="tag pos">高黏著</span></div>
+                    <div class="kpi-val" id="out-total-students">32 人</div>
+                    <div class="kpi-sub">小班同儕社群網路</div>
+                  </div>
+                  <div class="kpi">
+                    <div class="kpi-label"><span>預估月營業額</span><span class="tag info">零平台抽成</span></div>
+                    <div class="kpi-val" id="out-revenue">NT$ 217,600</div>
+                    <div class="kpi-sub">私域口碑直接招生</div>
+                  </div>
+                  <div class="kpi">
+                    <div class="kpi-label"><span>預估月營業利益</span><span class="tag warn">核心留利</span></div>
+                    <div class="kpi-val" id="out-profit" style="color:var(--accent-ink);">NT$ 154,900</div>
+                    <div class="kpi-sub" id="out-margin">營業利益率 71%（損益兩平：10 人）</div>
+                  </div>
+                  <div class="kpi">
+                    <div class="kpi-label"><span>主導師每週總工時</span><span class="tag pos">AI 槓桿</span></div>
+                    <div class="kpi-val" id="out-hours">18.5 小時/週</div>
+                    <div class="kpi-sub" id="out-saved-hours">AI 每週幫你省下 19.9 小時備課與週報工時</div>
+                  </div>
+                </div>
+
+                <div class="dact pos">
+                  <div>
+                    <div class="dact-title">📌 從 0 到 1 三階段低風險落地路徑</div>
+                    <div class="dact-reason">
+                      <strong>① 第 1〜3 個月（MVP 驗證）：</strong>先開 1 班（6〜8 人），租用週末共享空間，驗證完課率與家長口碑。<br />
+                      <strong>② 第 4〜12 個月（單點獲利）：</strong>擴展至 3〜4 班（24〜32 人），將線上 AI 副駕與家長觀測週報自動化。<br />
+                      <strong>③ 第 2 年起（系統複利）：</strong>累積跨屆專題案例庫，培訓兼職引導教練，形成區域高信任護城河。
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-subtle" style="margin-top:14px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <div>
+                  <strong style="display:block; font-size:14px;">想測試預約體驗或索取完整課綱與財務模型？</strong>
+                  <span style="font-size:12.5px; color:var(--text-dim);">點擊右側按鈕開啟理財專案同款互動表單跳窗</span>
+                </div>
+                <div class="badge-row">
+                  <button type="button" class="btn" data-open-trial-modal="預約週末工作坊體驗與索取創業藍圖">✨ 開啟預約／索取表單（跳窗）</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
   <script src="app.js"></script>
 </body>
 </html>
