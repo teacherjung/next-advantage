@@ -230,15 +230,16 @@ const INFO_DOCS = {
     `
   },
   'evidence-pbl': {
-    title: '實證拆解：OECD 社會情緒技能與 Lucas PBL 隨機對照實驗',
+    title: '實證拆解：OECD 社會情緒技能調查與 Lucas PBL 學校課程隨機對照實驗',
     body: `
-      <p>我們為下一代選定的「四大不可替代能力組合」，建立在兩大國際教育實證之上：</p>
+      <p>我們將教育文獻的<strong>「已知事實（研究直接觀察到的結果）」</strong>與本專案的<strong>「合理推論／待驗證假設」</strong>嚴格區分：</p>
       <ul>
-        <li><span class="hl">Lucas Education Research（2021）大型隨機對照實驗（RCT）</span>：涵蓋美國超過 6,000 名小學至高中學生的多項實驗證實，採用嚴謹專題式學習（Project-Based Learning, PBL）的學生，在科學、社會科標準化測驗與高階問題解決表現上，顯著優於傳統講授組（進步幅度達 8〜10 個百分點），且跨社經背景皆有效。</li>
-        <li><span class="hl">OECD 社會與情緒技能研究（2021 / 2024）</span>：跨國追蹤顯示，好奇心（Curiosity）、毅力／抗挫力（Persistence）與同理協作，是預測數位時代長期學業與職涯成就最穩健的指標。</li>
+        <li><span class="hl">【已知事實】Lucas Education Research（2021）學校課程隨機對照實驗（RCT）</span>：① 高中 AP 美國政府與環境科學實驗（Saavedra et al., 2021，逾 3,600 名學生）顯示，採用專案式課程的學生在當年 AP 考試取得可換學分成績（3 分以上）的比例較傳統組高約 <strong>8 個百分點</strong>（次年續教班級約 <strong>10 個百分點</strong>）；② 小學三年級科學實驗（Krajcik et al., 2021，逾 2,300 名學生）顯示，PBL 組在州立科學總結性評量高出 <strong>8 個百分點</strong>。<em>研究限制：上述實驗測量的是正規學校班級在特定學科之當期測驗與及格率，並非直接測量課外 6〜8 人小班或跨數十年的普遍長期遷移。</em></li>
+        <li><span class="hl">【已知事實】OECD《社會與情緒技能調查》（2021 / 2024）</span>：針對多國城市 10 歲與 15 歲學生進行抽樣橫斷面問卷調查（2019、2023 為兩輪調查，並非追蹤同一批兒童至成年職涯的縱貫實驗），顯示好奇心（Curiosity）、毅力／抗挫力（Persistence）與同理協作，與學生當期學業成績、生活滿意度及教育與職業抱負呈顯著正向關聯。</li>
       </ul>
       <div class="info-eg">
-        <strong>為什麼結合 AI 副駕（待驗證假設）？</strong>上述兩項實證證明了實體小班 PBL 的教育價值，但傳統 PBL 難規模化的瓶頸在於導師備課與個別紀錄工時過重；本專案提出以線上 AI 副駕目標省下 50%〜70% 後台文書工時（情境模擬假設，待第一階段 MVP 實測驗證）。
+        <strong>【合理推論與待驗證假設】從文獻到本專案 OMO 小班模式的成立條件：</strong><br />
+        基於上述文獻，我們<strong>合理推論</strong>在標準答案廉價化的時代，結合專題探究與同儕協作更具培養價值；至於本專案<strong>「課外 6〜8 人實體小班 ＋ 線上 AI 副駕」能否達成跨領域長期遷移、職涯優勢，以及省下 50%〜70% 後台備課與週報工時</strong>，皆屬<strong>【待驗證假設】</strong>，須滿足「嚴謹查證鷹架、導師反詰把關、跨期作品集追蹤」三項條件並於 MVP 實測驗證。
       </div>
     `
   },
@@ -258,13 +259,13 @@ const INFO_DOCS = {
     `
   },
   'destination-venue': {
-    title: '目的型場地策略（Destination Service）：如何擺脫一樓店租綁架？',
+    title: '目的型場地策略（Destination Service）：場地佔比 <15% 目標之成立條件',
     body: `
       <p>餐飲與零售店之所以辛苦，是因為依賴「過路客隨機衝動消費」，必須承租每坪單價最高的一樓街邊店面。</p>
       <ul>
-        <li><span class="hl">高信任教育服務屬於「目的型到訪」</span>：家長與學員是因為信任導師與同儕社群而專程前來，完全不需要一樓落地窗招牌。</li>
-        <li><span class="hl">階段一（0〜6 個月）週末時段合作租借</span>：與獨立書店、文創園區、共同工作空間合作，只租週六日白天時段，平日零空置租金成本，場地費佔營收低於 15%。</li>
-        <li><span class="hl">階段二（6 個月後）二樓以上創客基地</span>：待穩定滿 4 班（32 人）後，承租公園或捷運站旁二樓工作室，租金僅一樓店面的 1/3，即使房東漲租也能隨時平移，掌握 100% 客戶名單控制權。</li>
+        <li><span class="hl">高信任教育服務屬於「目的型到訪」</span>：家長與學員是因為信任導師與同儕社群而專程前來，不需要一樓落地窗招牌。</li>
+        <li><span class="hl">階段一（0〜6 個月）週末時段合作租借【目標條件：場地費佔營收 &lt;15%】</span>：與獨立書店、文創園區、共同工作空間合作，只租週六日白天時段（平日零空置租金）。依試算模型每班每月場地費 NT$ 7,200（4 週 × NT$ 1,800）計算：<strong>當每班招滿 8 人、月費 NT$ 6,800 時，場地費佔營收約 13.2%（達成 &lt;15% 目標）</strong>；但若初期每班僅 6 人（月費 NT$ 6,800），場地佔比為 <strong>17.6%</strong>；若僅 4 人且月費降至 NT$ 3,600，場地佔比將達 <strong>50%</strong>。因此「場地費低於 15%」並非租用週末場地即自動成立，而是須同時達成單班人數與定價門檻的營運目標。</li>
+        <li><span class="hl">階段二（6 個月後）二樓以上創客基地</span>：待穩定滿 4 班（32 人、月營收 NT$ 217,600）後，承租公園或捷運站旁二樓工作室（月租約 NT$ 32,000，佔比約 14.7%），即使房東漲租也能平移，掌握 100% 客戶名單控制權。</li>
       </ul>
     `
   }
@@ -534,6 +535,8 @@ function openMoatReportModal() {
   });
   const res = calculateMoatScore(inputs);
   const weakPoints = [];
+  if (inputs.physical <= 5) weakPoints.push('實體場域與現場交付壁壘偏低（純數位交付易遭 AI 快速複製，建議結合線下工作坊、硬體實作或在地專屬場域）');
+  if (inputs.trust <= 5) weakPoints.push('當面情感連結與信任擔保偏弱（建議強化真人導師雙向引導、家長定期觀課或安全照護承諾）');
   if (inputs.switching <= 5) weakPoints.push('客戶轉換成本偏低（建議加入跨期作品集、會員數位資產或長期服務契約）');
   if (inputs.network <= 5) weakPoints.push('缺乏同儕或社群網路效應（建議導入小班同儕共學或私域轉介紹機制）');
   if (inputs.aiLeverage <= 5) weakPoints.push('AI 後台槓桿不足（建議將標準備課、紀錄與報表草稿交給 AI 輔助生成）');
@@ -645,7 +648,7 @@ function openEconDetailModal() {
     <p>以下為您目前設定參數（每班 <strong>${currentParams.studentsPerClass} 人</strong>、共 <strong>${currentParams.classesCount} 班</strong>、月費 <strong>NT$ ${currentParams.monthlyFee.toLocaleString()}</strong>）的單月損益與工時情境拆解：</p>
     <ul>
       <li><span class="hl">單月總營業額：</span>NT$ ${cur.monthlyRevenue.toLocaleString()}（共 ${cur.totalStudents} 位學員，零外送或流量平台抽成）</li>
-      <li><span class="hl">固定成本小計：</span>NT$ ${cur.fixedCost.toLocaleString()}（含場地費 NT$ ${cur.venueCost.toLocaleString()}、軟體基建 NT$ 3,500、超過 3 班之兼職助教費）</li>
+      <li><span class="hl">固定成本小計：</span>NT$ ${cur.fixedCost.toLocaleString()}（含場地費 NT$ ${cur.venueCost.toLocaleString()}，佔當月營收 <strong>${cur.venueCostPct}%</strong>；軟體基建 NT$ 3,500；超過 3 班之兼職助教費）</li>
       <li><span class="hl">學員變動成本：</span>NT$ ${(cur.totalCost - cur.fixedCost).toLocaleString()}（每位學員教材與 AI 權杖費 NT$ 450）</li>
       <li><span class="hl">單月預估營業利益（Net Profit）：</span><strong>NT$ ${cur.netProfit.toLocaleString()}</strong>（營業利益率 ${cur.marginPct}%，固定成本除以每人邊際貢獻之損益兩平點：${cur.breakEvenStudents} 人）</li>
       <li><span class="hl">導師工時假設情境：</span>每週總工時 ${cur.totalWeeklyHours} 小時（【待驗證假設】依所選情境係數，AI 每週省下 ${cur.savedWeeklyHours} 小時非教學備課與週報時間，待 MVP 實測核對）</li>
@@ -653,9 +656,9 @@ function openEconDetailModal() {
     <div class="info-eg">
       <strong>📈 三階段擴張壓力測試對照（情境推估）：</strong>
       <ul>
-        <li><strong>階段一（MVP 2 班／合作空間）：</strong>營收 NT$ ${s1.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s1.netProfit.toLocaleString()}（利益率 ${s1.marginPct}%，損平 ${s1.breakEvenStudents} 人）</li>
-        <li><strong>階段二（穩定期 4 班／二樓基地）：</strong>營收 NT$ ${s2.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s2.netProfit.toLocaleString()}（利益率 ${s2.marginPct}%，損平 ${s2.breakEvenStudents} 人）</li>
-        <li><strong>階段三（滿載期 6 班／二樓基地＋助教）：</strong>營收 NT$ ${s3.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s3.netProfit.toLocaleString()}（利益率 ${s3.marginPct}%，損平 ${s3.breakEvenStudents} 人）</li>
+        <li><strong>階段一（MVP 2 班／合作空間）：</strong>營收 NT$ ${s1.monthlyRevenue.toLocaleString()}｜場地佔比 ${s1.venueCostPct}%｜營業利益 NT$ ${s1.netProfit.toLocaleString()}（利益率 ${s1.marginPct}%，損平 ${s1.breakEvenStudents} 人）</li>
+        <li><strong>階段二（穩定期 4 班／二樓基地）：</strong>營收 NT$ ${s2.monthlyRevenue.toLocaleString()}｜場地佔比 ${s2.venueCostPct}%｜營業利益 NT$ ${s2.netProfit.toLocaleString()}（利益率 ${s2.marginPct}%，損平 ${s2.breakEvenStudents} 人）</li>
+        <li><strong>階段三（滿載期 6 班／二樓基地＋助教）：</strong>營收 NT$ ${s3.monthlyRevenue.toLocaleString()}｜場地佔比 ${s3.venueCostPct}%｜營業利益 NT$ ${s3.netProfit.toLocaleString()}（利益率 ${s3.marginPct}%，損平 ${s3.breakEvenStudents} 人）</li>
       </ul>
     </div>
   `;
@@ -721,6 +724,7 @@ function calculateUnitEconomics(params) {
     venueCost = 85000;
   }
 
+  const venueCostPct = monthlyRevenue > 0 ? +(venueCost / monthlyRevenue * 100).toFixed(1) : 0;
   const variableCostPerStudent = 450;
   const fixedSoftwareCost = 3500;
   const materialAndAiCost = totalStudents * variableCostPerStudent + fixedSoftwareCost;
@@ -746,6 +750,7 @@ function calculateUnitEconomics(params) {
     totalStudents,
     monthlyRevenue,
     venueCost,
+    venueCostPct,
     fixedCost,
     totalCost,
     netProfit,
@@ -977,7 +982,7 @@ function initVenturePage() {
       document.getElementById('out-total-students').textContent = `${res.totalStudents} 人`;
       document.getElementById('out-revenue').textContent = `NT$ ${res.monthlyRevenue.toLocaleString()}`;
       document.getElementById('out-profit').textContent = `NT$ ${res.netProfit.toLocaleString()}`;
-      document.getElementById('out-margin').textContent = `營業利益率 ${res.marginPct}%（損益兩平：${res.breakEvenStudents} 人）`;
+      document.getElementById('out-margin').textContent = `營業利益率 ${res.marginPct}%（場地佔比 ${res.venueCostPct}%｜損益兩平：${res.breakEvenStudents} 人）`;
       document.getElementById('out-hours').textContent = `${res.totalWeeklyHours} 小時/週`;
       document.getElementById('out-saved-hours').textContent = `情境假設：AI 每週省下 ${res.savedWeeklyHours} 小時備課與週報工時`;
     };

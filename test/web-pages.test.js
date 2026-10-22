@@ -1,4 +1,4 @@
-// 為什麼：守護雙網頁（研究總覽頁與 OMO PBL 創業頁）的 HTML/CSS 結構錨點、試算公式確切數值、案例套用與分頁連動、剪貼簿複製回退及證據分級標示。
+// 為什麼：守護雙網頁（研究總覽頁與 OMO PBL 創業頁）的 HTML/CSS 結構與靜態資源接線、頂層啟動與雙頁初始化、試算公式確切數值、六維度診斷一致性、剪貼簿回退、證據分級標示與驗收路由。
 // 守到哪裡（擋不住什麼）：擋不住真實瀏覽器排版像素細節與視覺美感（視覺畫面已依 E10 由擁有者過目定案）。
 'use strict';
 
@@ -14,12 +14,8 @@ const {
   PBL_MODULES,
   calculateMoatScore,
   calculateUnitEconomics,
-  setResearchWorkspaceFilter,
   openCaseModal,
-  openMoatReportModal,
-  initResearchPage,
-  initVenturePage,
-  bootWebApp
+  openMoatReportModal
 } = require('../web/app.js');
 
 const ROOT = path.join(__dirname, '..');
@@ -28,6 +24,12 @@ function extractCssBlock(css, selector) {
   const esc = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const m = css.match(new RegExp(`${esc}\\s*\\{([^}]*)\\}`, 'm'));
   return m ? m[1] : '';
+}
+
+function extractAssetRefs(html) {
+  const scripts = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
+  const styles = [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*\bhref="([^"]+)"/g)].map((m) => m[1]);
+  return { scripts, styles };
 }
 
 function createFakeDom() {
@@ -58,7 +60,7 @@ function createFakeDom() {
       id: attrs.id || '',
       value: attrs.value !== undefined ? String(attrs.value) : '',
       textContent: attrs.textContent || '',
-       _innerHTML: '',
+      _innerHTML: '',
       style: {},
       parentNode: null,
       children,
@@ -136,6 +138,12 @@ function createFakeDom() {
   }
 
   function matchesSelector(node, sel) {
+    if (sel === 'input, select') {
+      return node.tagName === 'INPUT' || node.tagName === 'SELECT';
+    }
+    if (sel === 'input[type="range"]') {
+      return node.tagName === 'INPUT' && node.getAttribute('type') === 'range';
+    }
     if (sel.startsWith('#')) return node.id === sel.slice(1);
     if (sel.startsWith('.')) return node.classList.contains(sel.slice(1));
     const attrMatch = sel.match(/^\[([a-zA-Z0-9_-]+)(?:="([^"]*)")?\]$/);
@@ -198,12 +206,32 @@ function createFakeDom() {
   return doc;
 }
 
-test('雙網頁 HTML、理財專案樣式規則、證據分級標示與專案設定驗收表皆符合規範', () => {
+test('雙網頁 HTML、script/stylesheet 實際接線、理財專案樣式規則、證據分級標示與專案設定驗收路由皆符合規範', () => {
   const indexHtml = fs.readFileSync(path.join(ROOT, 'web', 'index.html'), 'utf8');
   const ventureHtml = fs.readFileSync(path.join(ROOT, 'web', 'venture.html'), 'utf8');
   const stylesCss = fs.readFileSync(path.join(ROOT, 'web', 'styles.css'), 'utf8');
   const phase2Doc = fs.readFileSync(path.join(ROOT, 'docs', 'phase-2-pbl-omo-research.md'), 'utf8');
   const settings = JSON.parse(fs.readFileSync(path.join(ROOT, 'settings.json'), 'utf8'));
+
+  for (const [pageName, html] of [['web/index.html', indexHtml], ['web/venture.html', ventureHtml]]) {
+    const refs = extractAssetRefs(html);
+    assert.deepEqual(
+      refs.scripts,
+      ['app.js'],
+      `${pageName} 必須載入且僅載入存在的 app.js：請檢查 ${pageName} 的 <script src="app.js">，修妥後重跑 node --test test/web-pages.test.js`
+    );
+    assert.deepEqual(
+      refs.styles,
+      ['styles.css'],
+      `${pageName} 必須載入存在的 styles.css：請檢查 ${pageName} 的 <link rel="stylesheet" href="styles.css">，修妥後重跑 node --test test/web-pages.test.js`
+    );
+    for (const relAsset of [...refs.scripts, ...refs.styles]) {
+      assert.ok(
+        fs.existsSync(path.join(ROOT, 'web', relAsset)),
+        `${pageName} 引用的靜態資源 web/${relAsset} 不存在：請檢查檔案路徑，修妥後重跑 node --test test/web-pages.test.js`
+      );
+    }
+  }
 
   assert.ok(
     stylesCss.includes('--bg: #fbf2dc') && stylesCss.includes('.modal-bg') && stylesCss.includes('.workspace-tabs') && stylesCss.includes('.forest-scene-summary'),
@@ -229,16 +257,48 @@ test('雙網頁 HTML、理財專案樣式規則、證據分級標示與專案設
     '研究網頁缺少創業頁連結、四象限面板、護城河計分器、跳窗容器或垂直軟體系統預設鈕：請檢查 web/index.html，修妥後重跑 node --test test/web-pages.test.js'
   );
   assert.ok(
-    ventureHtml.includes('href="index.html"') && ventureHtml.includes('id="lens-parent"') && ventureHtml.includes('id="lens-founder"') && ventureHtml.includes('id="unit-econ-form"') && ventureHtml.includes('損益兩平：8 人') && ventureHtml.includes('【待驗證假設】'),
-    '創業網頁缺少研究頁連結、雙視角區塊、正確初始損平人數（8 人）或待驗證假設標示：請檢查 web/venture.html，修妥後重跑 node --test test/web-pages.test.js'
+    ventureHtml.includes('href="index.html"') &&
+      ventureHtml.includes('id="lens-parent"') &&
+      ventureHtml.includes('id="lens-founder"') &&
+      ventureHtml.includes('id="unit-econ-form"') &&
+      ventureHtml.includes('場地佔比 13.2%｜損益兩平：8 人') &&
+      ventureHtml.includes('17.6%') &&
+      ventureHtml.includes('【待驗證假設】'),
+    '創業網頁缺少研究頁連結、雙視角區塊、正確初始場地佔比與損平人數（13.2% / 8 人）、6 人班 17.6% 說明或待驗證假設標示：請檢查 web/venture.html，修妥後重跑 node --test test/web-pages.test.js'
   );
   assert.ok(
-    phase2Doc.includes('四大不可替代能力組合') && phase2Doc.includes('【待驗證假設') && INFO_DOCS['evidence-sw'].body.includes('預測 2024 年'),
-    '研究報告或軟體實證跳窗缺少待驗證假設標示或 GitClear 2024 預測說明：請檢查 docs/phase-2-pbl-omo-research.md 與 web/app.js，修妥後重跑 node --test test/web-pages.test.js'
+    phase2Doc.includes('四大不可替代能力組合') &&
+      phase2Doc.includes('【待驗證假設') &&
+      phase2Doc.includes('13.2%') &&
+      phase2Doc.includes('17.6%') &&
+      phase2Doc.includes('抽樣橫斷面問卷調查') &&
+      INFO_DOCS['evidence-sw'].body.includes('預測 2024 年') &&
+      INFO_DOCS['evidence-pbl'].body.includes('抽樣橫斷面問卷調查') &&
+      INFO_DOCS['evidence-pbl'].body.includes('並非直接測量課外 6〜8 人小班') &&
+      INFO_DOCS['destination-venue'].body.includes('13.2%') &&
+      INFO_DOCS['destination-venue'].body.includes('17.6%'),
+    '研究報告或實證跳窗缺少待驗證假設標示、GitClear 2024 預測、Lucas/OECD 研究限制或場地佔比成立條件：請檢查 docs/phase-2-pbl-omo-research.md 與 web/app.js，修妥後重跑 node --test test/web-pages.test.js'
+  );
+
+  const matchAcceptanceTier = (filePath) => {
+    for (const fam of settings.acceptance.families || []) {
+      if (new RegExp(fam.pattern).test(filePath)) return fam.tier;
+    }
+    return null;
+  };
+  assert.equal(
+    matchAcceptanceTier('web/index.html'),
+    '畫面驗收',
+    'web/ 路徑必須在 settings.json 路由至「畫面驗收」：請檢查 settings.json 的 acceptance.families，修妥後重跑 node tools/build-settings.js 與 node --test test/web-pages.test.js'
+  );
+  assert.equal(
+    matchAcceptanceTier('docs/phase-2-pbl-omo-research.md'),
+    '文件檢視',
+    'docs/ 路徑必須在 settings.json 路由至「文件檢視」：請檢查 settings.json 的 acceptance.families，修妥後重跑 node tools/build-settings.js 與 node --test test/web-pages.test.js'
   );
   assert.ok(
-    settings.acceptance.tiers.some((t) => t.id === '畫面驗收') && !JSON.stringify(settings.acceptance).includes('套件倉庫沒有畫面'),
-    'settings.json 驗收分級表仍殘留套件倉庫沒有畫面字樣或缺少畫面驗收層級：請檢查 settings.json 並重跑 node tools/build-settings.js 與 node --test test/web-pages.test.js'
+    !JSON.stringify(settings.acceptance).includes('套件倉庫沒有畫面'),
+    'settings.json 驗收分級表仍殘留套件倉庫沒有畫面字樣：請檢查 settings.json 並重跑 node tools/build-settings.js 與 node --test test/web-pages.test.js'
   );
 });
 
@@ -275,6 +335,7 @@ test('五組四象限案例與雙軸護城河計分器公式及單點財務試�
       totalStudents: 32,
       monthlyRevenue: 217600,
       venueCost: 28800,
+      venueCostPct: 13.2,
       fixedCost: 48300,
       totalCost: 62700,
       netProfit: 154900,
@@ -293,6 +354,7 @@ test('五組四象限案例與雙軸護城河計分器公式及單點財務試�
       totalStudents: 12,
       monthlyRevenue: 60000,
       venueCost: 32000,
+      venueCostPct: 53.3,
       fixedCost: 35500,
       totalCost: 40900,
       netProfit: 19100,
@@ -304,8 +366,16 @@ test('五組四象限案例與雙軸護城河計分器公式及單點財務試�
     '2 班×6 人二樓基地中度 AI 槓桿之財務試算數值不符：請檢查 web/app.js 的 calculateUnitEconomics，修妥後重跑 node --test test/web-pages.test.js'
   );
 
+  const sixPersonPartner = calculateUnitEconomics({ studentsPerClass: 6, classesCount: 1, monthlyFee: 6800, venueMode: 'partner', aiLevel: 'high' });
+  assert.equal(
+    sixPersonPartner.venueCostPct,
+    17.6,
+    '1 班 6 人月費 6,800 合作場地之場地費佔營收比應為 17.6%：請檢查 web/app.js 的 calculateUnitEconomics，修妥後重跑 node --test test/web-pages.test.js'
+  );
+
   const oneClass4 = calculateUnitEconomics({ studentsPerClass: 4, classesCount: 1, monthlyFee: 3600, venueMode: 'partner', aiLevel: 'low' });
   const oneClass8 = calculateUnitEconomics({ studentsPerClass: 8, classesCount: 1, monthlyFee: 3600, venueMode: 'partner', aiLevel: 'low' });
+  assert.equal(oneClass4.venueCostPct, 50, '1 班 4 人月費 3,600 合作場地之場地費佔營收比應為 50%：請檢查 web/app.js');
   assert.equal(
     oneClass4.breakEvenStudents,
     4,
@@ -325,14 +395,8 @@ test('五組四象限案例與雙軸護城河計分器公式及單點財務試�
   );
 });
 
-test('DOM 啟動事件、四象限分頁套用案例自動展開計分器、以及診斷報告剪貼簿複製與失敗回退行為', async () => {
+test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙頁初始化、隱藏分頁套用案例展開、六維弱點診斷與剪貼簿回退', async () => {
   const fakeDoc = createFakeDom();
-  bootWebApp(fakeDoc);
-  assert.ok(
-    Array.isArray(fakeDoc._listeners.DOMContentLoaded) && fakeDoc._listeners.DOMContentLoaded.length === 1,
-    'bootWebApp 必須註冊 DOMContentLoaded 啟動事件：請檢查 web/app.js 的 bootWebApp，修妥後重跑 node --test test/web-pages.test.js'
-  );
-
   const prevDoc = global.document;
   const prevNav = global.navigator;
   global.document = fakeDoc;
@@ -341,6 +405,7 @@ test('DOM 啟動事件、四象限分頁套用案例自動展開計分器、以�
     fakeDoc._makeEl('div', { id: 'modal-root' });
     const toastRoot = fakeDoc._makeEl('div', { id: 'toast-root' });
 
+    // 研究頁 DOM 結構
     const tabAll = fakeDoc._makeEl('button', { 'data-workspace-filter': 'all' }, ['workspace-tab', 'is-active']);
     const tabMatrix = fakeDoc._makeEl('button', { 'data-workspace-filter': 'matrix' }, ['workspace-tab']);
     const tabCalc = fakeDoc._makeEl('button', { 'data-workspace-filter': 'calculator' }, ['workspace-tab']);
@@ -363,7 +428,61 @@ test('DOM 啟動事件、四象限分頁套用案例自動展開計分器、以�
     const quadOut = fakeDoc._makeEl('h3', { id: 'calc-quadrant' });
     fakeDoc._makeEl('div', { id: 'calc-verdict' });
 
-    initResearchPage();
+    // 創業頁 DOM 結構
+    const simForm = fakeDoc._makeEl('form', { id: 'unit-econ-form' });
+    const simStudents = fakeDoc._makeEl('input', { id: 'sim-students', type: 'range', value: '8' });
+    const simClasses = fakeDoc._makeEl('input', { id: 'sim-classes', type: 'range', value: '4' });
+    const simFee = fakeDoc._makeEl('input', { id: 'sim-fee', type: 'range', value: '6800' });
+    const simVenue = fakeDoc._makeEl('select', { id: 'sim-venue', value: 'partner' });
+    const simAi = fakeDoc._makeEl('select', { id: 'sim-ai', value: 'high' });
+    [simStudents, simClasses, simFee, simVenue, simAi].forEach((el) => simForm.appendChild(el));
+    fakeDoc._makeEl('span', { id: 'sim-students-val' });
+    fakeDoc._makeEl('span', { id: 'sim-classes-val' });
+    fakeDoc._makeEl('span', { id: 'sim-fee-val' });
+    const outTotalStudents = fakeDoc._makeEl('div', { id: 'out-total-students' });
+    fakeDoc._makeEl('div', { id: 'out-revenue' });
+    fakeDoc._makeEl('div', { id: 'out-profit' });
+    const outMargin = fakeDoc._makeEl('div', { id: 'out-margin' });
+    fakeDoc._makeEl('div', { id: 'out-hours' });
+    fakeDoc._makeEl('div', { id: 'out-saved-hours' });
+
+    // 重新載入 web/app.js，驗證頂層自動呼叫 bootWebApp() 並於 DOMContentLoaded 同時初始化雙頁
+    const appPath = require.resolve('../web/app.js');
+    delete require.cache[appPath];
+    require('../web/app.js');
+
+    assert.ok(
+      Array.isArray(fakeDoc._listeners.DOMContentLoaded) && fakeDoc._listeners.DOMContentLoaded.length === 1,
+      '載入 web/app.js 時必須在頂層自動呼叫 bootWebApp() 註冊 DOMContentLoaded 事件：請檢查 web/app.js，修妥後重跑 node --test test/web-pages.test.js'
+    );
+
+    for (const fn of fakeDoc._listeners.DOMContentLoaded) {
+      fn();
+    }
+
+    assert.equal(
+      antiAiOut.textContent,
+      '80 分',
+      'DOMContentLoaded 執行後研究頁計分器應完成初始化（預設滑桿 8 分對應 80 分）：請檢查 web/app.js 的 bootWebApp 與 initResearchPage，修妥後重跑 node --test test/web-pages.test.js'
+    );
+    assert.equal(
+      outTotalStudents.textContent,
+      '32 人',
+      'DOMContentLoaded 執行後創業頁試算器應完成初始化（預設 32 人）：請檢查 web/app.js 的 bootWebApp 與 initVenturePage，修妥後重跑 node --test test/web-pages.test.js'
+    );
+    assert.equal(
+      outMargin.textContent,
+      '營業利益率 71%（場地佔比 13.2%｜損益兩平：8 人）',
+      'DOMContentLoaded 執行後創業頁 #out-margin 應顯示預設利益率、場地佔比與損平人數：請檢查 web/app.js 的 initVenturePage，修妥後重跑 node --test test/web-pages.test.js'
+    );
+
+    simStudents.value = '6';
+    await simStudents.dispatchEvent('input');
+    assert.equal(
+      outMargin.textContent,
+      '營業利益率 64%（場地佔比 17.6%｜損益兩平：8 人）',
+      '調整每班人數為 6 人時，創業頁 #out-margin 應動態更新場地佔比為 17.6% 且損平維持 8 人：請檢查 web/app.js 的 initVenturePage，修妥後重跑 node --test test/web-pages.test.js'
+    );
 
     await tabMatrix.click();
     assert.ok(
@@ -383,23 +502,29 @@ test('DOM 啟動事件、四象限分頁套用案例自動展開計分器、以�
       !secCalc.classList.contains('hidden') && tabCalc.classList.contains('is-active'),
       '從四象限分頁套用案例後，必須自動切開分頁使計分器可見（移除 .hidden）：請檢查 web/app.js 的 applyMoatPresetByKey，修妥後重跑 node --test test/web-pages.test.js'
     );
-    assert.equal(
-      antiAiOut.textContent,
-      '44 分',
-      '套用垂直領域軟體系統案例後，抗 AI 分數應更新為 44 分：請檢查 web/app.js 的 applyMoatPresetByKey，修妥後重跑 node --test test/web-pages.test.js'
-    );
-    assert.equal(
-      moatOut.textContent,
-      '79 分',
-      '套用垂直領域軟體系統案例後，商業護城河分數應更新為 79 分：請檢查 web/app.js 的 applyMoatPresetByKey，修妥後重跑 node --test test/web-pages.test.js'
-    );
-    assert.equal(
-      quadOut.textContent,
-      '象限三：系統與責任槓桿區',
-      '套用垂直領域軟體系統案例後，象限標題應更新為象限三：請檢查 web/app.js 的 applyMoatPresetByKey，修妥後重跑 node --test test/web-pages.test.js'
+    assert.equal(antiAiOut.textContent, '44 分');
+    assert.equal(moatOut.textContent, '79 分');
+    assert.equal(quadOut.textContent, '象限三：系統與責任槓桿區');
+
+    // R2-1 驗證：當 physical=1, trust=1、其餘四維=10 時，不可宣稱「六大維度均衡強健」或「線下高信任留存」
+    fakeDoc.getElementById('moat-physical').value = '1';
+    fakeDoc.getElementById('moat-trust').value = '1';
+    fakeDoc.getElementById('moat-switching').value = '10';
+    fakeDoc.getElementById('moat-network').value = '10';
+    fakeDoc.getElementById('moat-aiLeverage').value = '10';
+    fakeDoc.getElementById('moat-rentFreedom').value = '10';
+    openMoatReportModal();
+    const lowPhysicalModalHtml = fakeDoc.getElementById('modal-root').children[0].innerHTML;
+    assert.ok(
+      lowPhysicalModalHtml.includes('實體場域與現場交付壁壘偏低') &&
+        lowPhysicalModalHtml.includes('當面情感連結與信任擔保偏弱') &&
+        !lowPhysicalModalHtml.includes('六大維度均衡強健') &&
+        !lowPhysicalModalHtml.includes('線下高信任留存'),
+      '當 physical 與 trust 低分時，診斷報告必須指出實體與信任弱點，不可宣稱六大維度均衡強健：請檢查 web/app.js 的 openMoatReportModal，修妥後重跑 node --test test/web-pages.test.js'
     );
 
-    await tabAll.click();
+    // 恢復 swSystem 預設以測試剪貼簿成功與失敗回退
+    await applyBtn.click();
 
     const copiedTexts = [];
     Object.defineProperty(global, 'navigator', {
@@ -428,7 +553,7 @@ test('DOM 啟動事件、四象限分頁套用案例自動展開計分器、以�
       '寫入剪貼簿的摘要文字必須包含目前分數與象限：請檢查 web/app.js 的 openMoatReportModal，修妥後重跑 node --test test/web-pages.test.js'
     );
     assert.equal(
-       fakeDoc.getElementById('modal-root').children.length,
+      fakeDoc.getElementById('modal-root').children.length,
       0,
       '剪貼簿寫入成功後應關閉診斷跳窗：請檢查 web/app.js 的 openMoatReportModal，修妥後重跑 node --test test/web-pages.test.js'
     );
