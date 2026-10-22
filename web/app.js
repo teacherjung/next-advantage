@@ -12,29 +12,74 @@ const ICONS = {
   shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
 };
 
+const MOAT_PRESETS = {
+  onlineCourse: { physical: 1, trust: 2, switching: 2, network: 2, aiLeverage: 5, rentFreedom: 7 },
+  drink: { physical: 8, trust: 3, switching: 1, network: 1, aiLeverage: 3, rentFreedom: 2 },
+  swSystem: { physical: 2, trust: 5, switching: 9, network: 7, aiLeverage: 9, rentFreedom: 9 },
+  privateSchool: { physical: 9, trust: 9, switching: 9, network: 8, aiLeverage: 4, rentFreedom: 6 },
+  omoPbl: { physical: 8, trust: 9, switching: 8, network: 8, aiLeverage: 9, rentFreedom: 8 }
+};
+
+function calculateMoatScore(inputs) {
+  const physical = Number(inputs.physical || 0);
+  const trust = Number(inputs.trust || 0);
+  const switching = Number(inputs.switching || 0);
+  const network = Number(inputs.network || 0);
+  const aiLeverage = Number(inputs.aiLeverage || 0);
+  const rentFreedom = Number(inputs.rentFreedom || 0);
+
+  const antiAi = Math.round((Math.max(physical, trust) * 0.6 + (physical + trust) * 0.2) * 10);
+  const moat = Math.round(((switching * 0.25 + network * 0.25 + aiLeverage * 0.2 + rentFreedom * 0.15 + trust * 0.15)) * 10);
+
+  let quadrant = '';
+  let verdict = '';
+  if (antiAi >= 60 && moat >= 60) {
+    quadrant = '象限四：實體×信任複利區（雙重保護）';
+    verdict = '具備極佳的抗 AI 保護與長期留存護城河！透過 AI 降低後台文書工時、實體場域建立高轉換成本與社群口碑，能形成長期複利。';
+  } else if (antiAi >= 60 && moat < 60) {
+    quadrant = '象限二：實體紅海內卷區（抗 AI 但缺護城河）';
+    verdict = '警訊：雖然 AI 取代不了你的現場交付，但同業模仿門檻過低或利潤易被店租／平台抽乾。建議加入「長期會員作品集／契約」與「目的型場地策略」來拉高護城河。';
+  } else if (antiAi < 60 && moat >= 60) {
+    quadrant = '象限三：系統與責任槓桿區';
+    verdict = '雖然生產環節高度數位化，但你握有高轉換成本、專有數據或深厚信任關係，可善用 AI 大幅放大單人產出槓桿。';
+  } else {
+    quadrant = '象限一：標準化數位商品區（高取代風險）';
+    verdict = '高風險：純執行門檻正被 AI 快速削平，且缺乏客戶轉換成本。建議往前端「真實痛點定義」或結合線下高信任服務轉型。';
+  }
+
+  return { antiAi, moat, quadrant, verdict };
+}
+
+function buildCaseRecord(def) {
+  const inputs = { ...MOAT_PRESETS[def.presetKey] };
+  const scored = calculateMoatScore(inputs);
+  return {
+    ...def,
+    inputs,
+    antiAiScore: scored.antiAi,
+    moatScore: scored.moat
+  };
+}
+
 const MATRIX_CASES = {
-  'sw-exec': {
+  'sw-exec': buildCaseRecord({
     id: 'sw-exec',
     name: '初階軟體寫碼與制式報告',
     quadrant: '象限一：標準化數位商品區（易被 AI 取代 × 低商業護城河）',
     tagClass: 'neg',
-    antiAiScore: 20,
-    moatScore: 18,
     presetKey: 'onlineCourse',
     valueProvided: '將明確規格轉化為標準程式碼、網頁切版或摘要報告。',
     aiImpact: '【任務自動化＋職業結構萎縮】AI 輔助寫碼使標準實作速度快 55.8%（Peng et al., 2023），純按規格敲鍵盤的初階職缺大幅縮減。',
     moatAnalysis: '幾乎無護城河：語法與模板已成為人人可用的公共基礎設施，單純「做得出來」不再具備定價權。',
-    risks: '供給暴增導致外包單價崩跌；缺乏架構審核力會產生高翻動率與技術債（GitClear, 2024）。',
+    risks: '供給暴增導致外包單價崩跌；缺乏架構審核力會導致短期翻動率上升與技術債累積（GitClear 2024 分析 2020-2023 資料並預測 2024 翻倍）。',
     actionLearn: '從「背語法」轉向「系統架構拆解、邊界測試設計、AI 產出驗收除錯」。',
     actionBuildOwn: '不賣單純工時；轉向垂直領域工作流整合與高轉換成本系統。'
-  },
-  'fnb-single': {
+  }),
+  'fnb-single': buildCaseRecord({
     id: 'fnb-single',
     name: '獨立手搖飲店／一般餐飲單店',
     quadrant: '象限二：實體紅海內卷區（難被 AI 直接取代 × 低商業護城河）',
     tagClass: 'warn',
-    antiAiScore: 78,
-    moatScore: 22,
     presetKey: 'drink',
     valueProvided: '現場飲品調製、即時味覺滿足與街角便利交付。',
     aiImpact: '【專用硬體自動化＋平台抽成】AI 無法隔空送飲料進肚子，但自動封口、定量果糖機與自動搖茶機削平了現場手藝門檻。',
@@ -42,29 +87,25 @@ const MATRIX_CASES = {
     risks: '15~44 歲勞動人口減少帶來結構性缺工、原物料與租金上漲、極高汰換率。',
     actionLearn: '學習數據化店務管理、私域會員經營與現場體驗設計，而非只練可被機器取代的搖茶動作。',
     actionBuildOwn: '切忌盲目砸退休金開無差異化單店；應累積自有品牌社群、供應鏈議價權或關鍵店面控制權。'
-  },
-  'sw-system': {
+  }),
+  'sw-system': buildCaseRecord({
     id: 'sw-system',
     name: '垂直領域軟體系統與高責任架構',
     quadrant: '象限三：系統與責任槓桿區（部分動作易被 AI 取代 × 高商業護城河）',
     tagClass: 'info',
-    antiAiScore: 58,
-    moatScore: 84,
-    presetKey: 'omoPbl',
+    presetKey: 'swSystem',
     valueProvided: '解決特定行業（醫療、理財、教育、校務）真實痛點，承擔資安合規與系統穩定責任。',
-    aiImpact: '【工作內容重組】AI 幫架構師省下 70% 基礎施工時間，讓 1~2 人小團隊能交付過去需要 10 人團隊才能完成的系統。',
+    aiImpact: '【工作內容重組】AI 大幅加速標準施工與測試樣板生成，讓熟練架構師與 1~2 人小團隊能交付過去需要多人團隊才能完成的系統。',
     moatAnalysis: '護城河來自「嵌入客戶日常流程的轉換成本」、「長期累積的專屬業務數據」與「出事時有人簽字負責的信任契約」。',
     risks: '若只做薄殼包裝（Wrapper）易被大廠模型升級吞噬；必須深耕真實業務流程與邊界驗證。',
     actionLearn: '跨領域痛點洞察力、嚴格驗收標準設計（Gates & Tests）、高可信度系統工程。',
     actionBuildOwn: '打造「AI 自動化施工 × 垂直領域專業知識」的高黏著度系統資產。'
-  },
-  'school-elite': {
+  }),
+  'school-elite': buildCaseRecord({
     id: 'school-elite',
     name: '具獨特辦學文化與社群的實體學校',
     quadrant: '象限四：實體×信任複利區（難被 AI 取代 × 高商業護城河）',
     tagClass: 'pos',
-    antiAiScore: 90,
-    moatScore: 85,
     presetKey: 'privateSchool',
     valueProvided: '五合一價值綑綁：①安全托育照顧 ②同儕互動社會化 ③法規文憑認證 ④品格習慣養成 ⑤知識傳授。',
     aiImpact: '【部分環節改變】AI 可取代第⑤項「單向知識講授與解題家教」，但疫情封校實證顯示線上平台無法取代實體同儕社交與情緒發展（UNESCO, 2023）。',
@@ -72,22 +113,20 @@ const MATRIX_CASES = {
     risks: '少子化人口結構萎縮（缺乏口碑與特色的後段學校仍會退場）、重資產折舊高、一般人資本門檻過高。',
     actionLearn: '孩子在校應重點鍛鍊面對面協作、衝突處理、同理領導與真實專題抗挫力。',
     actionBuildOwn: '一般創業者難以直接買地蓋校，可拆解其最精華的「同儕社會化＋專題實作＋家長信任」做成輕資產 OMO 模式。'
-  },
-  'omo-pbl': {
+  }),
+  'omo-pbl': buildCaseRecord({
     id: 'omo-pbl',
     name: 'NextLab 線上 AI 槓桿 × 線下實體 PBL 平台',
     quadrant: '象限四（輕資產切入）：實體×信任複利區（難被 AI 取代 × 高商業護城河）',
     tagClass: 'pos',
-    antiAiScore: 88,
-    moatScore: 82,
     presetKey: 'omoPbl',
     valueProvided: '為 6~18 歲下一代鍛鍊「提問、查證、專題落地、同儕協作」四大能力；為家庭提供看得見的成長作品集與觀測報告。',
-    aiImpact: '【結構性賦能】線上 AI 專題副駕包辦 70% 個別化提問鷹架、進度追蹤與家長週報生成；線下導師 100% 專注於實體小班同儕碰撞與動手實作。',
+    aiImpact: '【待驗證假設｜結構性賦能】目標以線上 AI 專題副駕省下約 50%~70% 個別化提問鷹架、進度追蹤與家長週報之非教學工時（待 MVP 實測核對），讓線下導師 100% 專注於實體小班同儕碰撞與動手實作。',
     moatAnalysis: '避開一樓高店租（採用目的型週末空間合作），靠「跨學期專題作品集轉換成本 ＋ 在地同儕與家長口碑網路 ＋ 專有 AI 引導教案庫」建立護城河。',
-    risks: '初期需建立第一批種子家長信任；必須嚴格守住「AI 引導思考而非代寫答案」的教學品質。',
+    risks: '初期需建立第一批種子家長信任；必須嚴格守住「AI 引導思考而非代寫答案」的教學品質，並於 MVP 實測驗證 AI 省時比例。',
     actionLearn: '導師與創業者需結合「AI 系統設計力」與「面對面高溫度引導力」。',
     actionBuildOwn: '一般專業成年人無須千萬資本即可啟動的「AI 數位槓桿 × 高信任實體服務」最佳試驗場。'
-  }
+  })
 };
 
 const AGE_PLANS = {
@@ -131,7 +170,7 @@ const INFO_DOCS = {
       <ul>
         <li><span class="hl">【已知事實】</span>：具備公開學術實驗、同行評審論文或政府官方統計數據支持，並標註具體年份（例如 GitHub/MIT 2023 實驗、UNESCO 2023 報告、經濟部 2024-2025 統計）。</li>
         <li><span class="hl">【合理推論】</span>：根據供需法則、邊際成本結構與轉換成本理論推導出的商業邏輯（例如：當生成程式碼邊際成本趨近於零，價值必然往前端問題定義與後端簽字責任兩端轉移）。</li>
-        <li><span class="hl">【待驗證假設】</span>：尚在小規模實驗或隨技術演進可能改變的命題，需設定明確的驗證指標與修正條件。</li>
+        <li><span class="hl">【待驗證假設】</span>：尚在小規模實驗或隨技術演進可能改變的命題（例如本專案 OMO 平台之 AI 後台省時 50%〜70% 情境參數），需設定明確的量測基準與推翻條件。</li>
       </ul>
       <div class="info-eg">
         <strong>核心黃金律：</strong>每一個研究結論都必須連回實際行動選擇——「這代表我們值得學什麼（Learn）、打造什麼（Build）、擁有什麼（Own）？」
@@ -154,10 +193,10 @@ const INFO_DOCS = {
   'evidence-sw': {
     title: '實證拆解：軟體開發的生產力躍升與「程式碼翻動率」警訊',
     body: `
-      <p>針對軟體開發受 AI 影響的程度，我們交叉比對了兩份關鍵實證研究：</p>
+      <p>針對軟體開發受 AI 影響的程度，我們交叉比對了兩份關鍵研究資料：</p>
       <ul>
         <li><span class="hl">速度提升 55.8%（Peng et al., 2023/02）</span>：GitHub、MIT 與微軟研究院對 95 名開發者進行隨機對照實驗（實作 HTTP 伺服器），使用 Copilot 組平均僅花 71 分鐘，較對照組（161 分鐘）快 55.8%。</li>
-        <li><span class="hl">短期翻動率（Code Churn）翻倍（GitClear, 2024/01）</span>：分析 2020〜2023 年超過 1.53 億行變更程式碼發現，寫入後兩週內就被修改或刪除的「短期翻動率」顯著上升，且複製貼上重複區塊增加。</li>
+        <li><span class="hl">短期翻動率（Code Churn）上升與 2024 翻倍預測（GitClear, 2024/01）</span>：GitClear 報告（<code>coding_on_copilot_data_shows_ais_downward_pressure_on_code_quality</code>）分析 2020〜2023 年超過 1.53 億行變更程式碼發現，寫入後兩週內即被修改或刪除的「短期翻動率」與複製貼上重複碼在 2022〜2023 年明顯上升，並據此預測 2024 年翻動率將較 2021 年 AI 普及前基準翻倍。</li>
       </ul>
       <div class="info-eg">
         <strong>對學習與職涯的啟示：</strong>「把程式碼敲出來」已經廉價化，但「定義清楚邊界條件、設計自動化測試閘門（Gates）、看穿 AI 潛在漏洞並簽字負責」的系統架構能力反而變得前所未有地昂貴。
@@ -199,12 +238,12 @@ const INFO_DOCS = {
         <li><span class="hl">OECD 社會與情緒技能研究（2021 / 2024）</span>：跨國追蹤顯示，好奇心（Curiosity）、毅力／抗挫力（Persistence）與同理協作，是預測數位時代長期學業與職涯成就最穩健的指標。</li>
       </ul>
       <div class="info-eg">
-        <strong>為什麼傳統學校與補習班很難做到？</strong>因為真正在小班引導 PBL 需要大量備課與個別追蹤工時——而這正是「線上 AI 副駕省下 70% 文書鷹架工時」能徹底解開的結構性瓶頸！
+        <strong>為什麼結合 AI 副駕（待驗證假設）？</strong>上述兩項實證證明了實體小班 PBL 的教育價值，但傳統 PBL 難規模化的瓶頸在於導師備課與個別紀錄工時過重；本專案提出以線上 AI 副駕目標省下 50%〜70% 後台文書工時（情境模擬假設，待第一階段 MVP 實測驗證）。
       </div>
     `
   },
   'socratic-ai': {
-    title: '蘇格拉底式 AI 專題副駕：如何做到「只引導思考、絕不代寫答案」？',
+    title: '蘇格拉底式 AI 專題副駕：防代寫機制與後台省時假設驗證條件',
     body: `
       <p>家長最擔心孩子用 ChatGPT 直接複製貼上交作業，導致大腦外包、思考退化。NextLab 的線上 AI 副駕採用三層防代寫機制：</p>
       <ul>
@@ -212,6 +251,10 @@ const INFO_DOCS = {
         <li><span class="hl">2. 刻意埋設「AI 破綻偵查題」</span>：每週提供一段含細微事實錯誤或邏輯跳躍的 AI 短文，要求學員用實體觀察或外部來源抓出破綻，才能解鎖下一關。</li>
         <li><span class="hl">3. 實體發表交叉驗收</span>：週末線下工作坊要求學員不看稿向隊友解釋自己的設計並動手組裝，任何只靠代寫的內容在現場協作中一秒現形。</li>
       </ul>
+      <div class="info-eg">
+        <strong>【待驗證假設】後台省時 50%〜70% 之量測基準與推翻條件：</strong><br />
+        試算器以「傳統每班備課 3.5 小時 ＋ 每位學員週報 0.45 小時」為基準，模擬高（省 70%）、中（省 50%）、低（省 25%）三檔非教學工時節省（不直接扣減固定現金支出）。每份週報仍須導師錄製 1 分鐘語音並審核簽名；若 MVP 實測節省低於 40% 或家長滿意度下降，即下修單人開班數並提前配置兼職助教。
+      </div>
     `
   },
   'destination-venue': {
@@ -220,7 +263,7 @@ const INFO_DOCS = {
       <p>餐飲與零售店之所以辛苦，是因為依賴「過路客隨機衝動消費」，必須承租每坪單價最高的一樓街邊店面。</p>
       <ul>
         <li><span class="hl">高信任教育服務屬於「目的型到訪」</span>：家長與學員是因為信任導師與同儕社群而專程前來，完全不需要一樓落地窗招牌。</li>
-        <li><span class="hl">階段一（0〜6 個月）週末時段合作租借</span>：與獨立書店、文創園區、共同工作空間合作，只租週六日白天時段，平日零空置租金成本，場地費佔營收低於 13%。</li>
+        <li><span class="hl">階段一（0〜6 個月）週末時段合作租借</span>：與獨立書店、文創園區、共同工作空間合作，只租週六日白天時段，平日零空置租金成本，場地費佔營收低於 15%。</li>
         <li><span class="hl">階段二（6 個月後）二樓以上創客基地</span>：待穩定滿 4 班（32 人）後，承租公園或捷運站旁二樓工作室，租金僅一樓店面的 1/3，即使房東漲租也能隨時平移，掌握 100% 客戶名單控制權。</li>
       </ul>
     `
@@ -295,6 +338,33 @@ function showToast(msg, durationMs) {
   }, durationMs || 3200);
 }
 
+async function copyTextToClipboard(text) {
+  if (!text) return false;
+  if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (_) {
+    }
+  }
+  if (typeof document !== 'undefined' && typeof document.execCommand === 'function' && document.body) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      if (typeof ta.select === 'function') ta.select();
+      const ok = Boolean(document.execCommand('copy'));
+      ta.remove();
+      if (ok) return true;
+    } catch (_) {
+    }
+  }
+  return false;
+}
+
 function bindBackdropClose(bg, close) {
   let downOnBackdrop = false;
   bg.addEventListener('mousedown', (e) => {
@@ -362,6 +432,58 @@ function openInfo(key) {
   openModal(doc.title, doc.body);
 }
 
+function setResearchWorkspaceFilter(filterKey) {
+  if (typeof document === 'undefined') return;
+  const wsTabs = document.querySelectorAll('[data-workspace-filter]');
+  wsTabs.forEach((t) => t.classList.toggle('is-active', t.getAttribute('data-workspace-filter') === filterKey));
+  document.querySelectorAll('#nav a[data-nav-filter]').forEach((a) => {
+    a.classList.toggle('active', a.getAttribute('data-nav-filter') === filterKey);
+  });
+  document.querySelectorAll('[data-ws-section]').forEach((sec) => {
+    const secKey = sec.getAttribute('data-ws-section');
+    if (filterKey === 'all' || secKey === filterKey) {
+      sec.classList.remove('hidden');
+    } else {
+      sec.classList.add('hidden');
+    }
+  });
+}
+
+function applyMoatPresetByKey(presetKey, labelOverride) {
+  if (typeof document === 'undefined') return false;
+  const p = MOAT_PRESETS[presetKey];
+  if (!p) return false;
+  const calcSec = document.getElementById('calculator-section');
+  if (calcSec && calcSec.classList.contains('hidden')) {
+    setResearchWorkspaceFilter('calculator');
+  }
+  document.querySelectorAll('[data-moat-preset]').forEach((b) => {
+    b.classList.toggle('active', b.getAttribute('data-moat-preset') === presetKey);
+  });
+  Object.entries(p).forEach(([k, v]) => {
+    const el = document.getElementById(`moat-${k}`);
+    if (el) el.value = String(v);
+    const valSpan = document.getElementById(`moat-${k}-val`);
+    if (valSpan) valSpan.textContent = `${v} / 10`;
+  });
+  const res = calculateMoatScore(p);
+  const antiAiEl = document.getElementById('calc-anti-ai');
+  const moatEl = document.getElementById('calc-moat-score');
+  const quadEl = document.getElementById('calc-quadrant');
+  const verdictEl = document.getElementById('calc-verdict');
+  if (antiAiEl) antiAiEl.textContent = `${res.antiAi} 分`;
+  if (moatEl) moatEl.textContent = `${res.moat} 分`;
+  if (quadEl) quadEl.textContent = res.quadrant;
+  if (verdictEl) verdictEl.textContent = res.verdict;
+  if (calcSec && typeof calcSec.scrollIntoView === 'function') {
+    calcSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  if (labelOverride) {
+    showToast(`已套用「${labelOverride}」參數至雙軸護城河計分器`);
+  }
+  return true;
+}
+
 function openCaseModal(caseId) {
   const item = MATRIX_CASES[caseId] || MATRIX_CASES['omo-pbl'];
   const body = `
@@ -398,15 +520,7 @@ function openCaseModal(caseId) {
       presetBtn.addEventListener('click', () => {
         const key = presetBtn.getAttribute('data-apply-preset');
         modalInstance.close();
-        const targetChip = document.querySelector(`[data-moat-preset="${key}"]`);
-        if (targetChip) {
-          targetChip.click();
-          const calcSec = document.getElementById('calculator-section');
-          if (calcSec && typeof calcSec.scrollIntoView === 'function') {
-            calcSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-          showToast(`已套用「${item.name}」參數至雙軸護城河計分器`);
-        }
+        applyMoatPresetByKey(key, item.name);
       });
     }
   }
@@ -422,9 +536,11 @@ function openMoatReportModal() {
   const weakPoints = [];
   if (inputs.switching <= 5) weakPoints.push('客戶轉換成本偏低（建議加入跨期作品集、會員數位資產或長期服務契約）');
   if (inputs.network <= 5) weakPoints.push('缺乏同儕或社群網路效應（建議導入小班同儕共學或私域轉介紹機制）');
-  if (inputs.aiLeverage <= 5) weakPoints.push('AI 後台槓桿不足（建議將 70% 標準備課、紀錄與報表交給 AI 自動生成）');
+  if (inputs.aiLeverage <= 5) weakPoints.push('AI 後台槓桿不足（建議將標準備課、紀錄與報表草稿交給 AI 輔助生成）');
   if (inputs.rentFreedom <= 5) weakPoints.push('易受一樓店租或外送平台抽成綁架（建議轉向目的型預約制空間或二樓基地）');
-  if (weakPoints.length === 0) weakPoints.push('六大維度均衡強健，具備典型的「AI 後台降本 × 線下高信任留存」雙重複利特徵！');
+  if (weakPoints.length === 0) weakPoints.push('六大維度均衡強健，具備典型的「AI 後台省時 × 線下高信任留存」雙重複利特徵！');
+
+  const summaryText = `診斷結果：${res.quadrant}（抗 AI ${res.antiAi} 分／護城河 ${res.moat} 分）｜${res.verdict}`;
 
   const body = `
     <p><span class="tag pos">${res.quadrant}</span></p>
@@ -445,6 +561,10 @@ function openMoatReportModal() {
         ${weakPoints.map((w) => `<li>${w}</li>`).join('')}
       </ul>
     </div>
+    <div id="moat-copy-fallback-wrap" class="sim-control hidden" style="margin-top:12px;">
+      <label for="moat-copy-fallback"><span>手動複製診斷摘要</span><span>請按 Cmd/Ctrl+C</span></label>
+      <input type="text" id="moat-copy-fallback" class="form-input" readonly value="${summaryText}" />
+    </div>
   `;
   const actions = `
     <button type="button" class="btn-ghost" id="btn-copy-moat-report">複製診斷摘要</button>
@@ -454,9 +574,18 @@ function openMoatReportModal() {
   if (modalInstance) {
     const copyBtn = modalInstance.bg.querySelector('#btn-copy-moat-report');
     if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        showToast(`已複製診斷結果：${res.quadrant}（抗 AI ${res.antiAi} 分／護城河 ${res.moat} 分）`);
-        modalInstance.close();
+      copyBtn.addEventListener('click', async () => {
+        const ok = await copyTextToClipboard(summaryText);
+        if (ok) {
+          showToast(`已複製診斷結果：${res.quadrant}（抗 AI ${res.antiAi} 分／護城河 ${res.moat} 分）`);
+          modalInstance.close();
+        } else {
+          const wrap = modalInstance.bg.querySelector('#moat-copy-fallback-wrap');
+          const inp = modalInstance.bg.querySelector('#moat-copy-fallback');
+          if (wrap) wrap.classList.remove('hidden');
+          if (inp && typeof inp.select === 'function') inp.select();
+          showToast('無法自動寫入剪貼簿，請直接複製視窗下方摘要文字');
+        }
       });
     }
   }
@@ -513,20 +642,20 @@ function openEconDetailModal() {
   const s3 = calculateUnitEconomics({ ...currentParams, classesCount: 6, venueMode: 'studio2f' });
 
   const body = `
-    <p>以下為您目前設定參數（每班 <strong>${currentParams.studentsPerClass} 人</strong>、共 <strong>${currentParams.classesCount} 班</strong>、月費 <strong>NT$ ${currentParams.monthlyFee.toLocaleString()}</strong>）的單月損益拆解：</p>
+    <p>以下為您目前設定參數（每班 <strong>${currentParams.studentsPerClass} 人</strong>、共 <strong>${currentParams.classesCount} 班</strong>、月費 <strong>NT$ ${currentParams.monthlyFee.toLocaleString()}</strong>）的單月損益與工時情境拆解：</p>
     <ul>
       <li><span class="hl">單月總營業額：</span>NT$ ${cur.monthlyRevenue.toLocaleString()}（共 ${cur.totalStudents} 位學員，零外送或流量平台抽成）</li>
-      <li><span class="hl">實體場地成本：</span>NT$ ${cur.venueCost.toLocaleString()}</li>
-      <li><span class="hl">教材耗材、AI 權杖與助教分潤：</span>NT$ ${(cur.totalCost - cur.venueCost).toLocaleString()}</li>
-      <li><span class="hl">單月預估營業利益（Net Profit）：</span><strong>NT$ ${cur.netProfit.toLocaleString()}</strong>（營業利益率 ${cur.marginPct}%，損益兩平點 ${cur.breakEvenStudents} 人）</li>
-      <li><span class="hl">導師工時效益：</span>每週總工時 ${cur.totalWeeklyHours} 小時（AI 副駕每週省下 ${cur.savedWeeklyHours} 小時備課與個別週報時間）</li>
+      <li><span class="hl">固定成本小計：</span>NT$ ${cur.fixedCost.toLocaleString()}（含場地費 NT$ ${cur.venueCost.toLocaleString()}、軟體基建 NT$ 3,500、超過 3 班之兼職助教費）</li>
+      <li><span class="hl">學員變動成本：</span>NT$ ${(cur.totalCost - cur.fixedCost).toLocaleString()}（每位學員教材與 AI 權杖費 NT$ 450）</li>
+      <li><span class="hl">單月預估營業利益（Net Profit）：</span><strong>NT$ ${cur.netProfit.toLocaleString()}</strong>（營業利益率 ${cur.marginPct}%，固定成本除以每人邊際貢獻之損益兩平點：${cur.breakEvenStudents} 人）</li>
+      <li><span class="hl">導師工時假設情境：</span>每週總工時 ${cur.totalWeeklyHours} 小時（【待驗證假設】依所選情境係數，AI 每週省下 ${cur.savedWeeklyHours} 小時非教學備課與週報時間，待 MVP 實測核對）</li>
     </ul>
     <div class="info-eg">
-      <strong>📈 三階段擴張壓力測試對照：</strong>
+      <strong>📈 三階段擴張壓力測試對照（情境推估）：</strong>
       <ul>
-        <li><strong>階段一（MVP 2 班／合作空間）：</strong>營收 NT$ ${s1.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s1.netProfit.toLocaleString()}（利益率 ${s1.marginPct}%）</li>
-        <li><strong>階段二（穩定期 4 班／二樓基地）：</strong>營收 NT$ ${s2.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s2.netProfit.toLocaleString()}（利益率 ${s2.marginPct}%）</li>
-        <li><strong>階段三（滿載期 6 班／二樓基地＋助教）：</strong>營收 NT$ ${s3.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s3.netProfit.toLocaleString()}（利益率 ${s3.marginPct}%）</li>
+        <li><strong>階段一（MVP 2 班／合作空間）：</strong>營收 NT$ ${s1.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s1.netProfit.toLocaleString()}（利益率 ${s1.marginPct}%，損平 ${s1.breakEvenStudents} 人）</li>
+        <li><strong>階段二（穩定期 4 班／二樓基地）：</strong>營收 NT$ ${s2.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s2.netProfit.toLocaleString()}（利益率 ${s2.marginPct}%，損平 ${s2.breakEvenStudents} 人）</li>
+        <li><strong>階段三（滿載期 6 班／二樓基地＋助教）：</strong>營收 NT$ ${s3.monthlyRevenue.toLocaleString()}｜營業利益 NT$ ${s3.netProfit.toLocaleString()}（利益率 ${s3.marginPct}%，損平 ${s3.breakEvenStudents} 人）</li>
       </ul>
     </div>
   `;
@@ -573,36 +702,6 @@ function openTrialFormModal(prefillTopic) {
   }
 }
 
-function calculateMoatScore(inputs) {
-  const physical = Number(inputs.physical || 0);
-  const trust = Number(inputs.trust || 0);
-  const switching = Number(inputs.switching || 0);
-  const network = Number(inputs.network || 0);
-  const aiLeverage = Number(inputs.aiLeverage || 0);
-  const rentFreedom = Number(inputs.rentFreedom || 0);
-
-  const antiAi = Math.round((Math.max(physical, trust) * 0.6 + (physical + trust) * 0.2) * 10);
-  const moat = Math.round(((switching * 0.25 + network * 0.25 + aiLeverage * 0.2 + rentFreedom * 0.15 + trust * 0.15)) * 10);
-
-  let quadrant = '';
-  let verdict = '';
-  if (antiAi >= 60 && moat >= 60) {
-    quadrant = '象限四：實體×信任複利區（雙重保護）';
-    verdict = '具備極佳的抗 AI 保護與長期留存護城河！透過 AI 降低後台成本、實體場域建立高轉換成本與社群口碑，能形成長期複利。';
-  } else if (antiAi >= 60 && moat < 60) {
-    quadrant = '象限二：實體紅海內卷區（抗 AI 但缺護城河）';
-    verdict = '警訊：雖然 AI 取代不了你的現場交付，但同業模仿門檻過低或利潤易被店租／平台抽乾。建議加入「長期會員作品集／契約」與「目的型場地策略」來拉高護城河。';
-  } else if (antiAi < 60 && moat >= 60) {
-    quadrant = '象限三：系統與責任槓桿區';
-    verdict = '雖然生產環節高度數位化，但你握有高轉換成本、專有數據或深厚信任關係，可善用 AI 大幅放大單人產出槓桿。';
-  } else {
-    quadrant = '象限一：標準化數位商品區（高取代風險）';
-    verdict = '高風險：純執行門檻正被 AI 快速削平，且缺乏客戶轉換成本。建議往前端「真實痛點定義」或結合線下高信任服務轉型。';
-  }
-
-  return { antiAi, moat, quadrant, verdict };
-}
-
 function calculateUnitEconomics(params) {
   const studentsPerClass = Number(params.studentsPerClass || 8);
   const classesCount = Number(params.classesCount || 4);
@@ -622,9 +721,12 @@ function calculateUnitEconomics(params) {
     venueCost = 85000;
   }
 
-  const materialAndAiCost = totalStudents * 450 + 3500;
+  const variableCostPerStudent = 450;
+  const fixedSoftwareCost = 3500;
+  const materialAndAiCost = totalStudents * variableCostPerStudent + fixedSoftwareCost;
   const mentorAssistantCost = classesCount > 3 ? (classesCount - 2) * 8000 : 0;
-  const totalCost = venueCost + materialAndAiCost + mentorAssistantCost;
+  const fixedCost = venueCost + fixedSoftwareCost + mentorAssistantCost;
+  const totalCost = fixedCost + totalStudents * variableCostPerStudent;
   const netProfit = monthlyRevenue - totalCost;
   const marginPct = monthlyRevenue > 0 ? Math.round((netProfit / monthlyRevenue) * 100) : 0;
 
@@ -637,12 +739,14 @@ function calculateUnitEconomics(params) {
   const actualPrepAndReportHours = +(traditionalPrepAndReportHours * (1 - aiReductionFactor)).toFixed(1);
   const totalWeeklyHours = +(workshopHoursPerWeek + actualPrepAndReportHours).toFixed(1);
   const savedWeeklyHours = +(traditionalPrepAndReportHours - actualPrepAndReportHours).toFixed(1);
-  const breakEvenStudents = Math.ceil(totalCost / Math.max(monthlyFee - 450, 1));
+  const contributionPerStudent = Math.max(monthlyFee - variableCostPerStudent, 1);
+  const breakEvenStudents = Math.ceil(fixedCost / contributionPerStudent);
 
   return {
     totalStudents,
     monthlyRevenue,
     venueCost,
+    fixedCost,
     totalCost,
     netProfit,
     marginPct,
@@ -697,28 +801,18 @@ function bindGlobalInteractions() {
 function initResearchPage() {
   const wsTabs = document.querySelectorAll('[data-workspace-filter]');
   if (wsTabs.length) {
-    const applyFilter = (filterKey) => {
-      wsTabs.forEach((t) => t.classList.toggle('is-active', t.getAttribute('data-workspace-filter') === filterKey));
-      document.querySelectorAll('[data-ws-section]').forEach((sec) => {
-        const secKey = sec.getAttribute('data-ws-section');
-        if (filterKey === 'all' || secKey === filterKey) {
-          sec.classList.remove('hidden');
-        } else {
-          sec.classList.add('hidden');
-        }
-      });
-    };
     wsTabs.forEach((t) => {
-      t.addEventListener('click', () => applyFilter(t.getAttribute('data-workspace-filter')));
+      t.addEventListener('click', () => setResearchWorkspaceFilter(t.getAttribute('data-workspace-filter')));
     });
     document.querySelectorAll('[data-nav-filter]').forEach((navLink) => {
       navLink.addEventListener('click', (e) => {
         const fk = navLink.getAttribute('data-nav-filter');
         if (fk) {
           e.preventDefault();
-          document.querySelectorAll('#nav a[data-nav-filter]').forEach((a) => a.classList.toggle('active', a === navLink));
-          applyFilter(fk);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setResearchWorkspaceFilter(fk);
+          if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }
       });
     });
@@ -799,13 +893,6 @@ function initResearchPage() {
 
   const moatForm = document.getElementById('moat-calc-form');
   if (moatForm) {
-    const presets = {
-      drink: { physical: 8, trust: 3, switching: 1, network: 1, aiLeverage: 3, rentFreedom: 2 },
-      onlineCourse: { physical: 1, trust: 4, switching: 2, network: 3, aiLeverage: 8, rentFreedom: 9 },
-      privateSchool: { physical: 9, trust: 9, switching: 9, network: 8, aiLeverage: 4, rentFreedom: 6 },
-      omoPbl: { physical: 8, trust: 9, switching: 8, network: 8, aiLeverage: 9, rentFreedom: 8 }
-    };
-
     const updateMoatUI = () => {
       const inputs = {};
       ['physical', 'trust', 'switching', 'network', 'aiLeverage', 'rentFreedom'].forEach((k) => {
@@ -827,16 +914,10 @@ function initResearchPage() {
 
     document.querySelectorAll('[data-moat-preset]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('[data-moat-preset]').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        const p = presets[btn.getAttribute('data-moat-preset')];
-        if (!p) return;
-        Object.entries(p).forEach(([k, v]) => {
-          const el = document.getElementById(`moat-${k}`);
-          if (el) el.value = String(v);
-        });
-        updateMoatUI();
-        showToast(`已載入預設參數：${btn.textContent.trim()}`);
+        const key = btn.getAttribute('data-moat-preset');
+        if (applyMoatPresetByKey(key)) {
+          showToast(`已載入預設參數：${btn.textContent.trim()}`);
+        }
       });
     });
 
@@ -898,7 +979,7 @@ function initVenturePage() {
       document.getElementById('out-profit').textContent = `NT$ ${res.netProfit.toLocaleString()}`;
       document.getElementById('out-margin').textContent = `營業利益率 ${res.marginPct}%（損益兩平：${res.breakEvenStudents} 人）`;
       document.getElementById('out-hours').textContent = `${res.totalWeeklyHours} 小時/週`;
-      document.getElementById('out-saved-hours').textContent = `AI 每週幫你省下 ${res.savedWeeklyHours} 小時備課與週報工時`;
+      document.getElementById('out-saved-hours').textContent = `情境假設：AI 每週省下 ${res.savedWeeklyHours} 小時備課與週報工時`;
     };
 
     simForm.querySelectorAll('input, select').forEach((el) => {
@@ -909,21 +990,38 @@ function initVenturePage() {
   }
 }
 
-if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
+function bootWebApp(doc) {
+  const targetDoc = doc || (typeof document !== 'undefined' ? document : null);
+  if (!targetDoc || typeof targetDoc.addEventListener !== 'function') return;
+  targetDoc.addEventListener('DOMContentLoaded', () => {
     bindGlobalInteractions();
     initResearchPage();
     initVenturePage();
   });
 }
 
+bootWebApp();
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    MOAT_PRESETS,
     MATRIX_CASES,
     AGE_PLANS,
     INFO_DOCS,
     PBL_MODULES,
     calculateMoatScore,
-    calculateUnitEconomics
+    calculateUnitEconomics,
+    copyTextToClipboard,
+    setResearchWorkspaceFilter,
+    applyMoatPresetByKey,
+    openCaseModal,
+    openMoatReportModal,
+    openModuleModal,
+    openEconDetailModal,
+    openTrialFormModal,
+    bindGlobalInteractions,
+    initResearchPage,
+    initVenturePage,
+    bootWebApp
   };
 }

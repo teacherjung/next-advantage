@@ -37,8 +37,8 @@
     <main class="main">
       <div class="page-head">
         <div>
-          <h1 class="page-title">AI 負責 70% 個別化鷹架與備課，真人與實體場域專注 100% 同儕碰撞與造物</h1>
-          <div class="page-sub">NextLab OMO PBL 創客平台｜為 6〜18 歲下一代打造的「四大能力訓練場」× 一般成年人高護城河輕資產創業原型</div>
+          <h1 class="page-title">線上 AI 輔助個別化鷹架與備課，真人與實體場域專注 100% 同儕碰撞與造物</h1>
+          <div class="page-sub">NextLab OMO PBL 創客平台｜為 6〜18 歲下一代打造的「四大能力訓練場」× 一般成年人高護城河輕資產創業原型（附待驗證工時與財務情境試算）</div>
         </div>
         <div class="page-actions">
           <button type="button" class="btn-ghost" data-info-key="socratic-ai">🤖 蘇格拉底 AI 防代寫機制</button>
@@ -66,11 +66,11 @@
         </div>
         <div class="forest-scene-summary-item">
           <div class="forest-scene-summary-kicker">
-            <span>🏰 創業者商業護城河</span>
+            <span>🏰 創業者商業護城河（含待驗證假設）</span>
             <button type="button" class="info-link" data-info-key="destination-venue"><span class="info-pill">?</span>場地</button>
           </div>
-          <div class="forest-scene-summary-value">省 70% 後台工時 × 擺脫一樓店租綁架</div>
-          <div class="forest-scene-summary-note">目的型週末空間合作讓固定場地費佔比低於 15%；靠作品集轉換成本與家長私域口碑建立高留存飛輪。</div>
+          <div class="forest-scene-summary-value">目標省 50%〜70% 後台工時 × 擺脫一樓店租</div>
+          <div class="forest-scene-summary-note">【待驗證假設】以 AI 釋放導師非教學備課工時（待 MVP 實測核對），搭配目的型週末空間合作與作品集高轉換成本建立留存飛輪。</div>
         </div>
       </section>
 
@@ -201,7 +201,7 @@
                   <td><strong>2. 名師與缺工瓶頸</strong></td>
                   <td>傳統 PBL 極度依賴名師手工備課與寫評語，1 位老師帶滿 15 人就精疲力竭。</td>
                   <td>
-                    <button type="button" class="info-link" data-info-key="socratic-ai"><strong>AI 後台槓桿省下 70% 文書與備課工時</strong> <span class="info-pill">?</span></button>：AI 自動生成專題鷹架與每週家長觀測報告草稿，導師只需錄 1 分鐘語音核對簽名，單人服務半徑擴大 2.5 倍。
+                    <button type="button" class="info-link" data-info-key="socratic-ai"><strong>【待驗證假設】AI 後台輔助目標省下 50%〜70% 備課與週報工時</strong> <span class="info-pill">?</span></button>：以 AI 輔助生成專題鷹架與每週家長觀測報告草稿，導師錄 1 分鐘語音並親自審核簽名，目標將單一導師可兼顧班級數由 2 班擴大至 4 班（實際省時比例待 MVP 實測核對）。
                   </td>
                 </tr>
                 <tr>
@@ -216,7 +216,7 @@
           <div class="grid-2" style="margin-bottom:0;">
             <form class="card-subtle" id="unit-econ-form" onsubmit="return false;">
               <div class="card-head" style="margin-bottom:12px;">
-                <h3 class="card-title" style="font-size:16.5px;">🧮 單點營運財務與 AI 工時槓桿互動試算器</h3>
+                <h3 class="card-title" style="font-size:16.5px;">🧮 單點營運財務與 AI 工時情境試算器</h3>
               </div>
 
               <div class="sim-control">
@@ -244,11 +244,11 @@
               </div>
 
               <div class="sim-control" style="margin-bottom:0;">
-                <label for="sim-ai"><span>AI 數位槓桿導入深度（備課、進度追蹤、家長週報）</span></label>
+                <label for="sim-ai"><span>AI 後台省時假設情境（影響主導師非教學工時，待 MVP 實測）</span></label>
                 <select id="sim-ai">
-                  <option value="high" selected>高槓桿（AI 省下 70% 後台備課與個別週報時間）</option>
-                  <option value="medium">中度輔助（AI 省下 50% 後台時間）</option>
-                  <option value="low">傳統純人工（僅省 25%，老師大量時間耗在改作業寫評語）</option>
+                  <option value="high" selected>高槓桿情境假設（目標省下 70% 後台備課與週報工時）</option>
+                  <option value="medium">中度輔助情境假設（目標省下 50% 後台備課與週報工時）</option>
+                  <option value="low">保守人工情境假設（僅省 25%，導師大量時間耗在手寫評語）</option>
                 </select>
               </div>
             </form>
@@ -256,7 +256,7 @@
             <div style="display:flex; flex-direction:column; justify-content:space-between;">
               <div>
                 <div class="card-head" style="margin-bottom:10px;">
-                  <span class="tag pos">單點每月營運模型預估（合理推論）</span>
+                  <span class="tag warn">單點每月營運模型預估（情境試算／待驗證假設）</span>
                   <button type="button" class="btn-ghost btn-sm" data-open-econ-modal="1">📊 查看完整損益拆解跳窗</button>
                 </div>
 
@@ -274,12 +274,12 @@
                   <div class="kpi">
                     <div class="kpi-label"><span>預估月營業利益</span><span class="tag warn">核心留利</span></div>
                     <div class="kpi-val" id="out-profit" style="color:var(--accent-ink);">NT$ 154,900</div>
-                    <div class="kpi-sub" id="out-margin">營業利益率 71%（損益兩平：10 人）</div>
+                    <div class="kpi-sub" id="out-margin">營業利益率 71%（損益兩平：8 人）</div>
                   </div>
                   <div class="kpi">
-                    <div class="kpi-label"><span>主導師每週總工時</span><span class="tag pos">AI 槓桿</span></div>
+                    <div class="kpi-label"><span>主導師每週總工時</span><span class="tag warn">情境假設</span></div>
                     <div class="kpi-val" id="out-hours">18.5 小時/週</div>
-                    <div class="kpi-sub" id="out-saved-hours">AI 每週幫你省下 19.9 小時備課與週報工時</div>
+                    <div class="kpi-sub" id="out-saved-hours">情境假設：AI 每週省下 19.9 小時備課與週報工時</div>
                   </div>
                 </div>
 
@@ -287,8 +287,8 @@
                   <div>
                     <div class="dact-title">📌 從 0 到 1 三階段低風險落地路徑</div>
                     <div class="dact-reason">
-                      <strong>① 第 1〜3 個月（MVP 驗證）：</strong>先開 1 班（6〜8 人），租用週末共享空間，驗證完課率與家長口碑。<br />
-                      <strong>② 第 4〜12 個月（單點獲利）：</strong>擴展至 3〜4 班（24〜32 人），將線上 AI 副駕與家長觀測週報自動化。<br />
+                      <strong>① 第 1〜3 個月（MVP 驗證）：</strong>先開 1 班（6〜8 人），租用週末共享空間，實測驗證完課率與 AI 後台省時比例。<br />
+                      <strong>② 第 4〜12 個月（單點獲利）：</strong>擴展至 3〜4 班（24〜32 人），將線上 AI 副駕與家長觀測週報流程標準化。<br />
                       <strong>③ 第 2 年起（系統複利）：</strong>累積跨屆專題案例庫，培訓兼職引導教練，形成區域高信任護城河。
                     </div>
                   </div>

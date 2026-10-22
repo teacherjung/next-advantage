@@ -416,17 +416,33 @@
  "acceptance": {
   "tiers": [
    {
+    "id": "畫面驗收",
+    "action": "改到雙網頁畫面、樣式或互動腳本：在瀏覽器開啟 web/index.html 與 web/venture.html 實測分頁、計分器、財務試算與跳窗互動，由擁有者看過畫面並留痕（若合併前已依 E10 看過定案，合併後核對主幹版本與定案畫面一致）"
+   },
+   {
+    "id": "文件檢視",
+    "action": "只改研究報告或說明文件：核對研究結論、實證來源年份與證據分級標示完整，免重跑瀏覽器畫面驗收"
+   },
+   {
     "id": "免驗收",
-    "action": "套件倉庫沒有畫面、部署或要重啟的程式：合併後不需擁有者驗收；改動在同步進使用專案那一支照該專案的分級驗收"
+    "action": "只改自動化考題、專案設定或協作工具且未變動雙網頁畫面與研究結論：由三關考題與合併閘把關，合併後不需擁有者另外驗收"
    }
   ],
   "families": [
    {
-    "pattern": "^",
+    "pattern": "^web/",
+    "tier": "畫面驗收"
+   },
+   {
+    "pattern": "^(docs/|README\\.md$)",
+    "tier": "文件檢視"
+   },
+   {
+    "pattern": "^(test/|tests/|tools/|templates/|\\.github/|settings\\.json$|PROJECT-SETTINGS\\.md$|AGENTS\\.md$|RULES\\.md$|rules\\.json$|MACHINES\\.md$|GLOSSARY\\.md$|kit-lock\\.json$|package(-lock)?\\.json$|\\.node-version$|\\.gitignore$)",
     "tier": "免驗收"
    }
   ],
-  "unknownTier": "免驗收"
+  "unknownTier": "畫面驗收"
  },
  "risk": {
   "families": [
