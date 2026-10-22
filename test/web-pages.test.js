@@ -263,8 +263,10 @@ test('雙網頁 HTML、script/stylesheet 實際接線、理財專案樣式規則
       ventureHtml.includes('id="unit-econ-form"') &&
       ventureHtml.includes('場地佔比 13.2%｜損益兩平：8 人') &&
       ventureHtml.includes('17.6%') &&
-      ventureHtml.includes('【待驗證假設】'),
-    '創業網頁缺少研究頁連結、雙視角區塊、正確初始場地佔比與損平人數（13.2% / 8 人）、6 人班 17.6% 說明或待驗證假設標示：請檢查 web/venture.html，修妥後重跑 node --test test/web-pages.test.js'
+      ventureHtml.includes('【待驗證假設】作品集轉換成本') &&
+      ventureHtml.includes('課程完成率 &gt;90%、學期續費率 &gt;75%、轉介紹獲客佔比 &gt;50%') &&
+      !ventureHtml.includes('完課率不到 15%'),
+    '創業網頁缺少研究頁連結、雙視角區塊、正確初始場地佔比與損平人數（13.2% / 8 人）、6 人班 17.6% 說明、比較表待驗證假設標示，或仍殘留未附來源之完課率百分比：請檢查 web/venture.html，修妥後重跑 node --test test/web-pages.test.js'
   );
   assert.ok(
     phase2Doc.includes('四大不可替代能力組合') &&
@@ -272,8 +274,11 @@ test('雙網頁 HTML、script/stylesheet 實際接線、理財專案樣式規則
       phase2Doc.includes('13.2%') &&
       phase2Doc.includes('17.6%') &&
       phase2Doc.includes('抽樣橫斷面問卷調查') &&
+      phase2Doc.includes('待 MVP 驗證完成率 >90%、續費率 >75% 與轉介紹 >50%') &&
       indexHtml.includes('僅觸及全球約 1/4 學生') &&
       indexHtml.includes('補充而非取代師生面對面互動') &&
+      !indexHtml.includes('90% 只會用 AI') &&
+      MATRIX_CASES['school-elite'].aiImpact.includes('僅觸及全球約 1/4 學生，並建議數位科技應補充而非取代師生面對面互動') &&
       INFO_DOCS['evidence-sw'].body.includes('預測 2024 年') &&
       INFO_DOCS['evidence-school'].body.includes('僅觸及（reached）全球約四分之一（約 25%）的學生') &&
       INFO_DOCS['evidence-school'].body.includes('並非教學有效參與率') &&
