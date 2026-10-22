@@ -272,12 +272,20 @@ test('雙網頁 HTML、script/stylesheet 實際接線、理財專案樣式規則
       phase2Doc.includes('13.2%') &&
       phase2Doc.includes('17.6%') &&
       phase2Doc.includes('抽樣橫斷面問卷調查') &&
+      indexHtml.includes('僅觸及全球約 1/4 學生') &&
+      indexHtml.includes('補充而非取代師生面對面互動') &&
       INFO_DOCS['evidence-sw'].body.includes('預測 2024 年') &&
+      INFO_DOCS['evidence-school'].body.includes('僅觸及（reached）全球約四分之一（約 25%）的學生') &&
+      INFO_DOCS['evidence-school'].body.includes('並非教學有效參與率') &&
+      INFO_DOCS['evidence-school'].body.includes('補充、而非取代師生面對面的人際互動') &&
+      !INFO_DOCS['evidence-school'].body.includes('真正有效參與') &&
+      INFO_DOCS['evidence-fnb'].body.includes('【已知事實】') &&
+      INFO_DOCS['evidence-fnb'].body.includes('【合理推論】') &&
       INFO_DOCS['evidence-pbl'].body.includes('抽樣橫斷面問卷調查') &&
       INFO_DOCS['evidence-pbl'].body.includes('並非直接測量課外 6〜8 人小班') &&
       INFO_DOCS['destination-venue'].body.includes('13.2%') &&
       INFO_DOCS['destination-venue'].body.includes('17.6%'),
-    '研究報告或實證跳窗缺少待驗證假設標示、GitClear 2024 預測、Lucas/OECD 研究限制或場地佔比成立條件：請檢查 docs/phase-2-pbl-omo-research.md 與 web/app.js，修妥後重跑 node --test test/web-pages.test.js'
+    '研究報告或實證跳窗缺少待驗證假設標示、GitClear 2024 預測、UNESCO 平台觸及率與政策建議區分、Lucas/OECD 研究限制或場地佔比成立條件：請檢查 docs/phase-2-pbl-omo-research.md、web/index.html 與 web/app.js，修妥後重跑 node --test test/web-pages.test.js'
   );
 
   const matchAcceptanceTier = (filePath) => {
@@ -506,21 +514,37 @@ test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙�
     assert.equal(moatOut.textContent, '79 分');
     assert.equal(quadOut.textContent, '象限三：系統與責任槓桿區');
 
-    // R2-1 驗證：當 physical=1, trust=1、其餘四維=10 時，不可宣稱「六大維度均衡強健」或「線下高信任留存」
-    fakeDoc.getElementById('moat-physical').value = '1';
-    fakeDoc.getElementById('moat-trust').value = '1';
-    fakeDoc.getElementById('moat-switching').value = '10';
-    fakeDoc.getElementById('moat-network').value = '10';
-    fakeDoc.getElementById('moat-aiLeverage').value = '10';
-    fakeDoc.getElementById('moat-rentFreedom').value = '10';
+    // R2-1 與 B2 驗證：六大維度逐一單獨低分（1 分、其餘五維 10 分）時，皆須顯示對應弱點處方且不可宣稱「六大維度均衡強健」；六維皆高分時才顯示「六大維度均衡強健」
+    const expectedWeakMessages = {
+      physical: '實體場域與現場交付壁壘偏低',
+      trust: '當面情感連結與信任擔保偏弱',
+      switching: '客戶轉換成本偏低',
+      network: '缺乏同儕或社群網路效應',
+      aiLeverage: 'AI 後台槓桿不足',
+      rentFreedom: '易受一樓店租或外送平台抽成綁架'
+    };
+    const allDimKeys = Object.keys(expectedWeakMessages);
+    for (const lowKey of allDimKeys) {
+      for (const k of allDimKeys) {
+        fakeDoc.getElementById(`moat-${k}`).value = k === lowKey ? '1' : '10';
+      }
+      openMoatReportModal();
+      const modalHtml = fakeDoc.getElementById('modal-root').children[0].innerHTML;
+      assert.ok(
+        modalHtml.includes(expectedWeakMessages[lowKey]) &&
+          !modalHtml.includes('六大維度均衡強健') &&
+          !modalHtml.includes('線下高信任留存'),
+        `當維度 ${lowKey} 低分時，診斷報告必須包含「${expectedWeakMessages[lowKey]}」且不可宣稱六大維度均衡強健：請檢查 web/app.js 的 openMoatReportModal，修妥後重跑 node --test test/web-pages.test.js`
+      );
+    }
+    for (const k of allDimKeys) {
+      fakeDoc.getElementById(`moat-${k}`).value = '10';
+    }
     openMoatReportModal();
-    const lowPhysicalModalHtml = fakeDoc.getElementById('modal-root').children[0].innerHTML;
+    const balancedHtml = fakeDoc.getElementById('modal-root').children[0].innerHTML;
     assert.ok(
-      lowPhysicalModalHtml.includes('實體場域與現場交付壁壘偏低') &&
-        lowPhysicalModalHtml.includes('當面情感連結與信任擔保偏弱') &&
-        !lowPhysicalModalHtml.includes('六大維度均衡強健') &&
-        !lowPhysicalModalHtml.includes('線下高信任留存'),
-      '當 physical 與 trust 低分時，診斷報告必須指出實體與信任弱點，不可宣稱六大維度均衡強健：請檢查 web/app.js 的 openMoatReportModal，修妥後重跑 node --test test/web-pages.test.js'
+      balancedHtml.includes('六大維度均衡強健'),
+      '當六大維度皆高於 5 分時，診斷報告應顯示六大維度均衡強健：請檢查 web/app.js 的 openMoatReportModal，修妥後重跑 node --test test/web-pages.test.js'
     );
 
     // 恢復 swSystem 預設以測試剪貼簿成功與失敗回退
