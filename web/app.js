@@ -749,13 +749,13 @@ function initResearchPage() {
               <div class="progress-track"><div class="progress-fill accent" style="width:${item.moatScore}%"></div></div>
             </div>
           </div>
-          <div style="display:flex; flex-direction:column; gap:8px; font-size:13.5px;">
-            <div><strong>🤖 AI 與自動化改變的環節：</strong>${item.aiImpact}</div>
-            <div><strong>🏰 護城河真偽拆解：</strong>${item.moatAnalysis}</div>
-            <div><strong>⚠️ 主要風險：</strong>${item.risks}</div>
+          <div class="detail-item-list">
+            <div class="detail-item-box"><strong>🤖 AI 與自動化改變的環節：</strong>${item.aiImpact}</div>
+            <div class="detail-item-box"><strong>🏰 護城河真偽拆解：</strong>${item.moatAnalysis}</div>
+            <div class="detail-item-box"><strong>⚠️ 主要經營與職涯風險：</strong>${item.risks}</div>
           </div>
         </div>
-        <div class="dact pos" style="margin-top:14px;">
+        <div class="dact pos" style="margin-top:16px;">
           <div>
             <div class="dact-title">🌱 值得學（Learn）：${item.actionLearn}</div>
             <div class="dact-reason">🏗️ 值得打造與擁有（Build & Own）：${item.actionBuildOwn}</div>
