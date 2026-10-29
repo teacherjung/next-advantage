@@ -210,6 +210,7 @@ test('雙網頁 HTML、script/stylesheet 實際接線、理財專案樣式規則
   const indexHtml = fs.readFileSync(path.join(ROOT, 'web', 'index.html'), 'utf8');
   const ventureHtml = fs.readFileSync(path.join(ROOT, 'web', 'venture.html'), 'utf8');
   const stylesCss = fs.readFileSync(path.join(ROOT, 'web', 'styles.css'), 'utf8');
+  const appJs = fs.readFileSync(path.join(ROOT, 'web', 'app.js'), 'utf8');
   const phase2Doc = fs.readFileSync(path.join(ROOT, 'docs', 'phase-2-pbl-omo-research.md'), 'utf8');
   const settings = JSON.parse(fs.readFileSync(path.join(ROOT, 'settings.json'), 'utf8'));
 
@@ -278,6 +279,8 @@ test('雙網頁 HTML、script/stylesheet 實際接線、理財專案樣式規則
       indexHtml.includes('僅觸及全球約 1/4 學生') &&
       indexHtml.includes('補充而非取代師生面對面互動') &&
       !indexHtml.includes('90% 只會用 AI') &&
+      MATRIX_CASES['sw-exec'].aiImpact.includes('95 名開發者單一任務實驗') &&
+      MATRIX_CASES['sw-exec'].aiImpact.includes('【合理推論】') &&
       MATRIX_CASES['school-elite'].aiImpact.includes('僅觸及全球約 1/4 學生，並建議數位科技應補充而非取代師生面對面互動') &&
       INFO_DOCS['evidence-sw'].body.includes('預測 2024 年') &&
       INFO_DOCS['evidence-school'].body.includes('僅觸及（reached）全球約四分之一（約 25%）的學生') &&
@@ -292,6 +295,14 @@ test('雙網頁 HTML、script/stylesheet 實際接線、理財專案樣式規則
       INFO_DOCS['destination-venue'].body.includes('17.6%'),
     '研究報告或實證跳窗缺少待驗證假設標示、GitClear 2024 預測、UNESCO 平台觸及率與政策建議區分、Lucas/OECD 研究限制或場地佔比成立條件：請檢查 docs/phase-2-pbl-omo-research.md、web/index.html 與 web/app.js，修妥後重跑 node --test test/web-pages.test.js'
   );
+
+  const combinedContent = [indexHtml, ventureHtml, appJs, phase2Doc].join('\n');
+  for (const forbiddenPhrase of ['25%~35%', '25%〜35%', '抽成 30%', '初階職缺大幅縮減', '完課率不到 15%', '90% 只會用 AI']) {
+    assert.ok(
+      !combinedContent.includes(forbiddenPhrase),
+      `雙網頁、app.js 或第二階段研究報告不可殘留未附一手來源之敘述「${forbiddenPhrase}」：請檢查 web/ 與 docs/phase-2-pbl-omo-research.md，修妥後重跑 node --test test/web-pages.test.js`
+    );
+  }
 
   const matchAcceptanceTier = (filePath) => {
     for (const fam of settings.acceptance.families || []) {
@@ -340,6 +351,26 @@ test('五組四象限案例與雙軸護城河計分器公式及單點財務試�
     assert.equal(calc.moat, exp.moat, `preset ${item.presetKey} 計算之護城河分數不符：請檢查 web/app.js，修妥後重跑 node --test test/web-pages.test.js`);
     assert.ok(calc.quadrant.startsWith(exp.quadPrefix), `preset ${item.presetKey} 象限應為 ${exp.quadPrefix}：請檢查 web/app.js，修妥後重跑 node --test test/web-pages.test.js`);
   }
+
+  // R5-1 半分邊界回歸驗證：(physical=8, trust=6, switching=6, network=6, aiLeverage=5, rentFreedom=7) 數學真值護城河為 59.5 分，四捨五入必須為 60 分並進入象限四，不可因 IEEE-754 浮點誤差變成 59 分掉入象限二
+  const halfPointBoundary = calculateMoatScore({
+    physical: 8,
+    trust: 6,
+    switching: 6,
+    network: 6,
+    aiLeverage: 5,
+    rentFreedom: 7
+  });
+  assert.deepEqual(
+    halfPointBoundary,
+    {
+      antiAi: 76,
+      moat: 60,
+      quadrant: '象限四：實體×信任複利區（雙重保護）',
+      verdict: '具備極佳的抗 AI 保護與長期留存護城河！透過 AI 降低後台文書工時、實體場域建立高轉換成本與社群口碑，能形成長期複利。'
+    },
+    '滑桿組合 (8, 6, 6, 6, 5, 7) 的數學真值 59.5 分四捨五入後必須為 60 分並歸入象限四：請檢查 web/app.js 的 calculateMoatScore，修妥後重跑 node --test test/web-pages.test.js'
+  );
 
   const defaultEcon = calculateUnitEconomics({ studentsPerClass: 8, classesCount: 4, monthlyFee: 6800, venueMode: 'partner', aiLevel: 'high' });
   assert.deepEqual(
@@ -518,6 +549,25 @@ test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙�
     assert.equal(antiAiOut.textContent, '44 分');
     assert.equal(moatOut.textContent, '79 分');
     assert.equal(quadOut.textContent, '象限三：系統與責任槓桿區');
+
+    // R5-1 DOM 與診斷跳窗驗證：設定滑桿為 (8, 6, 6, 6, 5, 7) 時，計分器與跳窗報告皆顯示 60 分與象限四
+    fakeDoc.getElementById('moat-physical').value = '8';
+    fakeDoc.getElementById('moat-trust').value = '6';
+    fakeDoc.getElementById('moat-switching').value = '6';
+    fakeDoc.getElementById('moat-network').value = '6';
+    fakeDoc.getElementById('moat-aiLeverage').value = '5';
+    fakeDoc.getElementById('moat-rentFreedom').value = '7';
+    await fakeDoc.getElementById('moat-trust').dispatchEvent('input');
+    assert.equal(antiAiOut.textContent, '76 分');
+    assert.equal(moatOut.textContent, '60 分');
+    assert.equal(quadOut.textContent, '象限四：實體×信任複利區（雙重保護）');
+    openMoatReportModal();
+    const halfBoundaryModalHtml = fakeDoc.getElementById('modal-root').children[0].innerHTML;
+    assert.ok(
+      halfBoundaryModalHtml.includes('<span>商業護城河留利分數</span><span>60 分</span>') &&
+        halfBoundaryModalHtml.includes('象限四：實體×信任複利區（雙重保護）（抗 AI 76 分／護城河 60 分）'),
+      '滑桿 (8, 6, 6, 6, 5, 7) 開啟診斷跳窗時應顯示 60 分與象限四：請檢查 web/app.js 的 calculateMoatScore 與 openMoatReportModal，修妥後重跑 node --test test/web-pages.test.js'
+    );
 
     // R2-1 與 B2 驗證：六大維度逐一單獨低分（1 分、其餘五維 10 分）時，皆須顯示對應弱點處方且不可宣稱「六大維度均衡強健」；六維皆高分時才顯示「六大維度均衡強健」
     const expectedWeakMessages = {

@@ -28,8 +28,8 @@ function calculateMoatScore(inputs) {
   const aiLeverage = Number(inputs.aiLeverage || 0);
   const rentFreedom = Number(inputs.rentFreedom || 0);
 
-  const antiAi = Math.round((Math.max(physical, trust) * 0.6 + (physical + trust) * 0.2) * 10);
-  const moat = Math.round(((switching * 0.25 + network * 0.25 + aiLeverage * 0.2 + rentFreedom * 0.15 + trust * 0.15)) * 10);
+  const antiAi = Math.round(Math.max(physical, trust) * 6 + (physical + trust) * 2);
+  const moat = Math.round((switching * 5 + network * 5 + aiLeverage * 4 + rentFreedom * 3 + trust * 3) / 2);
 
   let quadrant = '';
   let verdict = '';
@@ -69,7 +69,7 @@ const MATRIX_CASES = {
     tagClass: 'neg',
     presetKey: 'onlineCourse',
     valueProvided: '將明確規格轉化為標準程式碼、網頁切版或摘要報告。',
-    aiImpact: '【任務自動化＋職業結構萎縮】AI 輔助寫碼使標準實作速度快 55.8%（Peng et al., 2023），純按規格敲鍵盤的初階職缺大幅縮減。',
+    aiImpact: '【任務自動化＋價值重組推論】實驗顯示 AI 輔助寫碼使標準 HTTP 伺服器實作速度快 55.8%（Peng et al., 2023/02，95 名開發者單一任務實驗）；【合理推論】當依規格生成初版程式碼的邊際成本下降，單純按規格敲鍵盤的執行溢價正受壓縮。',
     moatAnalysis: '幾乎無護城河：語法與模板已成為人人可用的公共基礎設施，單純「做得出來」不再具備定價權。',
     risks: '供給暴增導致外包單價崩跌；缺乏架構審核力會導致短期翻動率上升與技術債累積（GitClear 2024 分析 2020-2023 資料並預測 2024 翻倍）。',
     actionLearn: '從「背語法」轉向「系統架構拆解、邊界測試設計、AI 產出驗收除錯」。',
@@ -83,7 +83,7 @@ const MATRIX_CASES = {
     presetKey: 'drink',
     valueProvided: '現場飲品調製、即時味覺滿足與街角便利交付。',
     aiImpact: '【專用硬體自動化＋平台抽成】AI 無法隔空送飲料進肚子，但自動封口、定量果糖機與自動搖茶機削平了現場手藝門檻。',
-    moatAnalysis: '抗 AI 但無商業護城河：全台飲料店逼近 2.9 萬家、手搖飲逾 1.6 萬家（財政部與經濟部 2024-2025 統計），配方易模仿，利潤被房東漲租與外送平台（25%~35%）抽乾。',
+    moatAnalysis: '抗 AI 但無商業護城河：全台飲料店逼近 2.9 萬家、手搖飲逾 1.6 萬家（財政部與經濟部 2024-2025 統計），配方易模仿，利潤易受一樓房東漲租與外送平台高額抽成雙向擠壓。',
     risks: '15~44 歲勞動人口減少帶來結構性缺工、原物料與租金上漲、極高汰換率。',
     actionLearn: '學習數據化店務管理、私域會員經營與現場體驗設計，而非只練可被機器取代的搖茶動作。',
     actionBuildOwn: '切忌盲目砸退休金開無差異化單店；應累積自有品牌社群、供應鏈議價權或關鍵店面控制權。'
@@ -186,7 +186,7 @@ const INFO_DOCS = {
         <li><span class="hl">商業護城河（Y 軸）</span>：衡量的是「當這件事好賺時，其他人類同行能不能輕易複製你？房東與平台會不會把你的超額利潤抽乾？」</li>
       </ul>
       <div class="info-eg">
-        <strong>經典反例（象限二）：</strong>開一家獨立手搖飲店，AI 確實喝不了也送不了飲料（高抗 AI）；但因為設備標準化、配方易模仿，隔一條街馬上開出 5 家競品，加上外送平台抽成 30% 與房東漲租，最後陷入「不會被 AI 取代，卻被同業與房東淘汰」的紅海內卷。
+        <strong>經典反例（象限二）：</strong>開一家獨立手搖飲店，AI 確實喝不了也送不了飲料（高抗 AI）；但因為設備標準化、配方易模仿，隔一條街馬上開出多家競品，加上外送平台高額抽成與房東漲租擠壓，最後陷入「不會被 AI 取代，卻被同業與房東淘汰」的紅海內卷。
       </div>
     `
   },
@@ -222,7 +222,7 @@ const INFO_DOCS = {
       <p>我們將台灣官方產業統計的<strong>「已知事實」</strong>與商業結構的<strong>「合理推論」</strong>分列如下：</p>
       <ul>
         <li><span class="hl">【已知事實】經濟部統計處與財政部營利事業統計（2024〜2025）</span>：全台飲料店年營業額突破 1,300 億元，總店數逼近 2.9 萬家（其中手搖飲店超過 1.6 萬家），同時服務業面臨 15〜44 歲青壯年人口下滑之缺工壓力。</li>
-        <li><span class="hl">【合理推論】三明治利潤擠壓結構</span>：① 前端受外送平台（約 25%〜35% 抽成）與街邊一樓店租擠壓；② 中端因自動煮茶機、定量果糖機普及，降低了單純現場手藝的複製門檻；③ 後端受缺工與原物料成本推升影響，使無差異化單店極易陷入高汰換紅海。</li>
+        <li><span class="hl">【合理推論】三明治利潤擠壓結構</span>：① 前端受外送平台高額抽成與街邊一樓店租擠壓；② 中端因自動煮茶機、定量果糖機普及，降低了單純現場手藝的複製門檻；③ 後端受缺工與原物料成本推升影響，使無差異化單店極易陷入高汰換紅海。</li>
       </ul>
       <div class="info-eg">
         <strong>【合理推論】給創業者的啟示：</strong>在實體產業中，「AI 無法隔空搖飲料」不等於單店好賺；真正能留住利潤的是「品牌私域社群（免被平台抽成）」、「供應鏈規模」或「目的型場地控制權（免搶一樓高價店面）」。
