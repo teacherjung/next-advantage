@@ -15,7 +15,8 @@ const {
   calculateMoatScore,
   calculateUnitEconomics,
   openCaseModal,
-  openMoatReportModal
+  openMoatReportModal,
+  openEconDetailModal
 } = require('../web/app.js');
 
 const ROOT = path.join(__dirname, '..');
@@ -437,6 +438,17 @@ test('五組四象限案例與雙軸護城河計分器公式及單點財務試�
     profitBefore < 0 && profitAt >= 0,
     '損益兩平門檻前一人應為虧損、達門檻應非負：請檢查 web/app.js 的 calculateUnitEconomics，修妥後重跑 node --test test/web-pages.test.js'
   );
+
+  // R6-1 半分邊界回歸驗證：營業利益率 56.5% -> 57%、57.5% -> 58%，以及 1 班 4 人中度 AI 備課 2.65 小時 -> 2.7 小時（總工時 5.2 小時、省下 2.6 小時）
+  const halfMargin1 = calculateUnitEconomics({ studentsPerClass: 7, classesCount: 4, monthlyFee: 5000, venueMode: 'partner', aiLevel: 'high' });
+  const halfMargin2 = calculateUnitEconomics({ studentsPerClass: 9, classesCount: 6, monthlyFee: 4000, venueMode: 'studio2f', aiLevel: 'high' });
+  const halfMargin3 = calculateUnitEconomics({ studentsPerClass: 10, classesCount: 3, monthlyFee: 8000, venueMode: 'street1f', aiLevel: 'high' });
+  const halfHours = calculateUnitEconomics({ studentsPerClass: 4, classesCount: 1, monthlyFee: 6800, venueMode: 'partner', aiLevel: 'medium' });
+  assert.equal(halfMargin1.marginPct, 57, '7 人×4 班×5,000 合作場地之營業利益率真值 56.5% 四捨五入應為 57%：請檢查 web/app.js 的 calculateUnitEconomics');
+  assert.equal(halfMargin2.marginPct, 58, '9 人×6 班×4,000 二樓基地之營業利益率真值 57.5% 四捨五入應為 58%：請檢查 web/app.js 的 calculateUnitEconomics');
+  assert.equal(halfMargin3.marginPct, 58, '10 人×3 班×8,000 一樓店面之營業利益率真值 57.5% 四捨五入應為 58%：請檢查 web/app.js 的 calculateUnitEconomics');
+  assert.equal(halfHours.totalWeeklyHours, 5.2, '4 人×1 班中度 AI 之每週總工時（授課 2.5＋備課 2.65 四捨五入 2.7）應為 5.2 小時：請檢查 web/app.js 的 calculateUnitEconomics');
+  assert.equal(halfHours.savedWeeklyHours, 2.6, '4 人×1 班中度 AI 之每週節省工時（5.3 - 2.7）應為 2.6 小時：請檢查 web/app.js 的 calculateUnitEconomics');
 });
 
 test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙頁初始化、隱藏分頁套用案例展開、六維弱點診斷與剪貼簿回退', async () => {
@@ -487,8 +499,8 @@ test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙�
     fakeDoc._makeEl('div', { id: 'out-revenue' });
     fakeDoc._makeEl('div', { id: 'out-profit' });
     const outMargin = fakeDoc._makeEl('div', { id: 'out-margin' });
-    fakeDoc._makeEl('div', { id: 'out-hours' });
-    fakeDoc._makeEl('div', { id: 'out-saved-hours' });
+    const outHours = fakeDoc._makeEl('div', { id: 'out-hours' });
+    const outSavedHours = fakeDoc._makeEl('div', { id: 'out-saved-hours' });
 
     // 重新載入 web/app.js，驗證頂層自動呼叫 bootWebApp() 並於 DOMContentLoaded 同時初始化雙頁
     const appPath = require.resolve('../web/app.js');
@@ -526,6 +538,44 @@ test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙�
       outMargin.textContent,
       '營業利益率 64%（場地佔比 17.6%｜損益兩平：8 人）',
       '調整每班人數為 6 人時，創業頁 #out-margin 應動態更新場地佔比為 17.6% 且損平維持 8 人：請檢查 web/app.js 的 initVenturePage，修妥後重跑 node --test test/web-pages.test.js'
+    );
+
+    // R6-1 創業頁 DOM 與損益跳窗半分邊界驗證：7 人×4 班×5,000 合作場地（利益率 56.5% -> 57%），以及 4 人×1 班×6,800 中度 AI（總工時 5.2 小時、省 2.6 小時）
+    simStudents.value = '7';
+    simClasses.value = '4';
+    simFee.value = '5000';
+    simVenue.value = 'partner';
+    simAi.value = 'high';
+    await simStudents.dispatchEvent('input');
+    assert.equal(
+      outMargin.textContent,
+      '營業利益率 57%（場地佔比 20.6%｜損益兩平：11 人）',
+      '7 人×4 班×5,000 合作場地時，主畫面 #out-margin 必須顯示營業利益率 57%：請檢查 web/app.js 的 calculateUnitEconomics 與 initVenturePage'
+    );
+    openEconDetailModal();
+    const econModalHtml1 = fakeDoc.getElementById('modal-root').children[0].innerHTML;
+    assert.ok(
+      econModalHtml1.includes('營業利益率 57%') && econModalHtml1.includes('利益率 54%'),
+      '7 人×4 班×5,000 開啟損益明細跳窗時，主明細應顯示營業利益率 57% 且三階段對照一致：請檢查 web/app.js 的 openEconDetailModal'
+    );
+
+    simStudents.value = '4';
+    simClasses.value = '1';
+    simFee.value = '6800';
+    simVenue.value = 'partner';
+    simAi.value = 'medium';
+    await simAi.dispatchEvent('change');
+    assert.equal(outHours.textContent, '5.2 小時/週', '4 人×1 班中度 AI 時，主畫面 #out-hours 應顯示 5.2 小時/週：請檢查 web/app.js');
+    assert.equal(
+      outSavedHours.textContent,
+      '情境假設：AI 每週省下 2.6 小時備課與週報工時',
+      '4 人×1 班中度 AI 時，主畫面 #out-saved-hours 應顯示省下 2.6 小時：請檢查 web/app.js'
+    );
+    openEconDetailModal();
+    const econModalHtml2 = fakeDoc.getElementById('modal-root').children[0].innerHTML;
+    assert.ok(
+      econModalHtml2.includes('每週總工時 5.2 小時') && econModalHtml2.includes('AI 每週省下 2.6 小時'),
+      '4 人×1 班中度 AI 開啟損益明細跳窗時，應顯示每週總工時 5.2 小時與省下 2.6 小時：請檢查 web/app.js 的 openEconDetailModal'
     );
 
     await tabMatrix.click();

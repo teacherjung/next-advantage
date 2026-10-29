@@ -705,6 +705,16 @@ function openTrialFormModal(prefillTopic) {
   }
 }
 
+function roundRatioInt(numerator, denominator) {
+  const num = BigInt(Math.trunc(numerator));
+  const den = BigInt(Math.trunc(denominator));
+  const doubled = num * 2n + den;
+  const twoDen = den * 2n;
+  const q = doubled / twoDen;
+  const r = doubled % twoDen;
+  return Number(r < 0n ? q - 1n : q);
+}
+
 function calculateUnitEconomics(params) {
   const studentsPerClass = Number(params.studentsPerClass || 8);
   const classesCount = Number(params.classesCount || 4);
@@ -724,25 +734,24 @@ function calculateUnitEconomics(params) {
     venueCost = 85000;
   }
 
-  const venueCostPct = monthlyRevenue > 0 ? +(venueCost / monthlyRevenue * 100).toFixed(1) : 0;
+  const venueCostPct = monthlyRevenue > 0 ? roundRatioInt(venueCost * 1000, monthlyRevenue) / 10 : 0;
   const variableCostPerStudent = 450;
   const fixedSoftwareCost = 3500;
-  const materialAndAiCost = totalStudents * variableCostPerStudent + fixedSoftwareCost;
   const mentorAssistantCost = classesCount > 3 ? (classesCount - 2) * 8000 : 0;
   const fixedCost = venueCost + fixedSoftwareCost + mentorAssistantCost;
   const totalCost = fixedCost + totalStudents * variableCostPerStudent;
   const netProfit = monthlyRevenue - totalCost;
-  const marginPct = monthlyRevenue > 0 ? Math.round((netProfit / monthlyRevenue) * 100) : 0;
+  const marginPct = monthlyRevenue > 0 ? roundRatioInt(netProfit * 100, monthlyRevenue) : 0;
 
-  const workshopHoursPerWeek = classesCount * 2.5;
-  const traditionalPrepAndReportHours = classesCount * 3.5 + totalStudents * 0.45;
-  let aiReductionFactor = 0.7;
-  if (aiLevel === 'low') aiReductionFactor = 0.25;
-  else if (aiLevel === 'medium') aiReductionFactor = 0.5;
+  const workshopHoursTenths = classesCount * 25;
+  const traditionalPrepHundredths = classesCount * 350 + totalStudents * 45;
+  let remainPct = 30;
+  if (aiLevel === 'low') remainPct = 75;
+  else if (aiLevel === 'medium') remainPct = 50;
 
-  const actualPrepAndReportHours = +(traditionalPrepAndReportHours * (1 - aiReductionFactor)).toFixed(1);
-  const totalWeeklyHours = +(workshopHoursPerWeek + actualPrepAndReportHours).toFixed(1);
-  const savedWeeklyHours = +(traditionalPrepAndReportHours - actualPrepAndReportHours).toFixed(1);
+  const actualPrepTenths = roundRatioInt(traditionalPrepHundredths * remainPct, 1000);
+  const totalWeeklyHours = (workshopHoursTenths + actualPrepTenths) / 10;
+  const savedWeeklyHours = roundRatioInt(traditionalPrepHundredths - actualPrepTenths * 10, 10) / 10;
   const contributionPerStudent = Math.max(monthlyFee - variableCostPerStudent, 1);
   const breakEvenStudents = Math.ceil(fixedCost / contributionPerStudent);
 
