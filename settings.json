@@ -416,17 +416,33 @@
  "acceptance": {
   "tiers": [
    {
+    "id": "畫面驗收",
+    "action": "改到雙網頁畫面、樣式或互動腳本：在瀏覽器開啟 web/index.html 與 web/venture.html 實測分頁、計分器、財務試算與跳窗互動，由擁有者看過畫面並留痕（若合併前已依 E10 看過定案，合併後核對主幹版本與定案畫面一致）"
+   },
+   {
+    "id": "文件檢視",
+    "action": "只改研究報告或說明文件：核對研究結論、實證來源年份與證據分級標示完整，免重跑瀏覽器畫面驗收"
+   },
+   {
     "id": "免驗收",
-    "action": "套件倉庫沒有畫面、部署或要重啟的程式：合併後不需擁有者驗收；改動在同步進使用專案那一支照該專案的分級驗收"
+    "action": "只改自動化考題、專案設定或協作工具且未變動雙網頁畫面與研究結論：由三關考題與合併閘把關，合併後不需擁有者另外驗收"
    }
   ],
   "families": [
    {
-    "pattern": "^",
+    "pattern": "^web/",
+    "tier": "畫面驗收"
+   },
+   {
+    "pattern": "^(docs/|README\\.md$)",
+    "tier": "文件檢視"
+   },
+   {
+    "pattern": "^(test/|tests/|tools/|templates/|\\.github/|settings\\.json$|PROJECT-SETTINGS\\.md$|AGENTS\\.md$|RULES\\.md$|rules\\.json$|MACHINES\\.md$|GLOSSARY\\.md$|kit-lock\\.json$|package(-lock)?\\.json$|\\.node-version$|\\.gitignore$)",
     "tier": "免驗收"
    }
   ],
-  "unknownTier": "免驗收"
+  "unknownTier": "畫面驗收"
  },
  "risk": {
   "families": [
@@ -439,23 +455,19 @@
     "tier": "低"
    },
    {
-    "pattern": "^BACKLOG\\.md$",
-    "tier": "低"
-   },
-   {
-    "pattern": "^cases/",
-    "tier": "低"
-   },
-   {
-    "pattern": "^(rules\\.json|RULES\\.md|GLOSSARY\\.md|MACHINES\\.md)$",
+    "pattern": "^docs/money-guard-two-pattern-tables\\.md$",
     "tier": "高"
    },
    {
-    "pattern": "^(tools|tests|templates|manual|docs)/",
+    "pattern": "^(docs|web|test)/",
+    "tier": "中"
+   },
+   {
+    "pattern": "^(rules\\.json|RULES\\.md|GLOSSARY\\.md|MACHINES\\.md|kit-lock\\.json)$",
     "tier": "高"
    },
    {
-    "pattern": "^kit-only/",
+    "pattern": "^(tools|tests|templates)/",
     "tier": "高"
    },
    {
@@ -589,7 +601,9 @@
   "indexAnchors": [
    "未設定"
   ],
-  "prepareWorktree": []
+  "prepareWorktree": [
+   "無"
+  ]
  },
  "gates": [
   {
@@ -599,7 +613,7 @@
    "args": [
     "tools/gates/check-pending-rulings.js"
    ],
-   "state": "已安裝未啟用"
+   "state": "已啟用"
   },
   {
    "name": "複審結論聯集（有沒有未撤銷的阻擋、有沒有對目前版本的通過）",
@@ -608,7 +622,7 @@
    "args": [
     "tools/gates/check-review-verdicts.js"
    ],
-   "state": "已安裝未啟用"
+   "state": "已啟用"
   },
   {
    "name": "協作欄位（四欄齊全、實作者不等於複審者）",
@@ -617,7 +631,7 @@
    "args": [
     "tools/gates/check-collab-fields.js"
    ],
-   "state": "已安裝未啟用"
+   "state": "已啟用"
   },
   {
    "name": "堆疊（底是主幹、上面沒有疊別支）",
@@ -626,7 +640,7 @@
    "args": [
     "tools/gates/check-stacked.js"
    ],
-   "state": "已安裝未啟用"
+   "state": "已啟用"
   },
   {
    "name": "真考卷（必要檢查最新場次真的跑過且成功）",
@@ -635,7 +649,7 @@
    "args": [
     "tools/gates/check-checks-really-ran.js"
    ],
-   "state": "已安裝未啟用"
+   "state": "已啟用"
   },
   {
    "name": "跨PR試合併（與每支以主幹為底的開著PR真合起來跑三關）",
@@ -644,7 +658,7 @@
    "args": [
     "tools/gates/check-cross-merge.js"
    ],
-   "state": "已安裝未啟用"
+   "state": "已啟用"
   }
  ],
  "mergeCommand": {
@@ -679,14 +693,16 @@
   {
    "name": "協作欄位閘（四欄齊全、實作者不等於複審者）",
    "rules": "A2、D3、E1",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "結論聯集閘（阻擋只有同一位能解除、放行只認指定那一位對目前版本的通過）",
    "rules": "F4、F5、F7",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "禁區攔截器（判斷一份，接上鉤子的每一家 AI 都呼叫它；沒接的那一家＝靠自覺）",
@@ -709,8 +725,9 @@
   {
    "name": "雲端三關與協作欄位閘的範本",
    "rules": "E3",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "清版本控制環境變數的共用實作（GIT_ 前綴整族清）",
@@ -739,26 +756,30 @@
   {
    "name": "堆疊閘（底必須是主幹、不可以有別支疊在上面）",
    "rules": "H2",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "真考卷閘（必過檢查在那顆版本上真的跑過且成功）",
    "rules": "H3",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "跨PR試合併閘（與每支以主幹為底的開著PR真合起來跑三關）",
    "rules": "H4",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "驗收分級工具（路徑家族表住設定；只算不擋）",
    "rules": "H6",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "本文長度考題",
@@ -801,56 +822,65 @@
   {
    "name": "待裁清單工具（掃整個專案的留言；只列不擋）",
    "rules": "D1、I3",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "待裁閘（本支貼的 ❓ 還沒配到 ⚖️ 或 🚫 就不放行；判斷用待裁清單工具那一份）",
    "rules": "A5",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "風險分級工具（合併前依檔案算風險級別、印出複審與掃描分級表那一列，只算不擋）",
    "rules": "D4",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "舊文字掃描（列出這支刪掉或改掉的字串還出現在哪，只列不擋）",
    "rules": "K5",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "開工印待辦（列出待辦清單裡提到這支改到的檔的那幾條，只列不擋）",
    "rules": "F6",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "進度摘要檢查（摘要每則的形狀、兩個時間、沒動的線、大小、附件條號、已合併對不對得上平台，只列不擋）",
    "rules": "J5",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "本週成果產生器（最近七天合併進主幹的 PR 照日期列成摘要那一節，--write 才換掉那一節）",
    "rules": "J5",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "下游落後（套件這一邊印出登記的使用專案落後幾支、哪些共用檔不同、設定少哪些欄位與機器列，只列不擋）",
    "rules": "K1",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   },
   {
    "name": "整理清單（列出可以收的分支、工作樹、暫存資料夾的舊審查樹、stash，只列不刪）",
    "rules": "D2",
-   "state": "已安裝未啟用",
-   "verified": ""
+   "state": "已啟用",
+   "verified": "",
+   "since": "2026-10-22"
   }
  ]
 }

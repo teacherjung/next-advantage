@@ -1,7 +1,7 @@
 {
   "repo": "teacherjung/ai-collab-kit",
-  "version": "34b3ff7d0f1658d8537352703c9ff1a0b24610f8",
-  "syncedAt": "2026-10-22",
+  "version": "620f3fdd983b7387815ebfef62bd960a1697f11f",
+  "syncedAt": "2026-10-29",
   "entries": [
     {
       "mode": "100644",
@@ -10,7 +10,7 @@
     },
     {
       "mode": "100644",
-      "blob": "2249c4c176c7d7dca54012ddf0b2c039e7cba9f9",
+      "blob": "9b6b898b1e4060e19400cd52d5bc6d4a282d57da",
       "path": "MACHINES.md"
     },
     {
@@ -120,7 +120,7 @@
     },
     {
       "mode": "100644",
-      "blob": "f6d089a94123469b8c079214753fb4978d2fe54c",
+      "blob": "832229474e61fcc6c868508df1bf3d5d983a29db",
       "path": "templates/scan-record.md"
     },
     {
@@ -320,12 +320,12 @@
     },
     {
       "mode": "100644",
-      "blob": "d77eaf4fe775dfa4c6faccb3bf02843cf74bd5f8",
+      "blob": "ea5551d21f56d053f322188d8df7d1c140e8b73f",
       "path": "tests/preflight.test.js"
     },
     {
       "mode": "100644",
-      "blob": "573e7e996a1de61ccaa3c764bf075f32edb46836",
+      "blob": "cbf2ab16c89937dc667816d9c2bb56869a3ef46f",
       "path": "tests/review-launch.test.js"
     },
     {
@@ -345,7 +345,7 @@
     },
     {
       "mode": "100644",
-      "blob": "55b8895ff7587ce3347dd5e4a308cb55454960a4",
+      "blob": "4c59edd1d1eaa1b404c85a21c2b596820eed0535",
       "path": "tests/run-checks.test.js"
     },
     {
@@ -365,7 +365,7 @@
     },
     {
       "mode": "100644",
-      "blob": "eac7d76aaf7771ec3a2495be096bcb39dc04c75d",
+      "blob": "6d49274157f66a9a89cdf1d559764240958a31dd",
       "path": "tests/tidy-list.test.js"
     },
     {
@@ -500,12 +500,12 @@
     },
     {
       "mode": "100644",
-      "blob": "4bfdb8085523dfd8ecd95aed81e48ff25c97e284",
+      "blob": "ccc54a3791f981f1c6025d8efeece1ae92b91158",
       "path": "tools/preflight.js"
     },
     {
       "mode": "100644",
-      "blob": "127b93658d2870a9f5004ac665259b2204684af0",
+      "blob": "8f049e3a0d18794500366bdf5c8649bc33140ba5",
       "path": "tools/review-launch.js"
     },
     {
@@ -535,7 +535,7 @@
     },
     {
       "mode": "100644",
-      "blob": "5a833c6d8f2dc128ff806ee423332b6b27ec260e",
+      "blob": "6010e5e7858422ca763921d1041a81d93609d0ed",
       "path": "tools/tidy-list.js"
     },
     {
