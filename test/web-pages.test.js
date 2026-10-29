@@ -254,21 +254,71 @@ test('雙網頁 HTML、script/stylesheet 實際接線、理財專案樣式規則
     '跳窗樣式 .modal-bg 或 .modal 不可含 visibility: hidden 或 display: none：請檢查 web/styles.css，修妥後重跑 node --test test/web-pages.test.js'
   );
 
+  assert.equal(
+    [...indexHtml.matchAll(/href="venture\.html"/g)].length,
+    4,
+    '研究網頁應包含全部 4 處指向 venture.html 的跨頁入口連結：請檢查 web/index.html，修妥後重跑 node --test test/web-pages.test.js'
+  );
+  assert.equal(
+    [...ventureHtml.matchAll(/href="index\.html"/g)].length,
+    3,
+    '創業網頁應包含全部 3 處指向 index.html 的跨頁入口連結：請檢查 web/venture.html，修妥後重跑 node --test test/web-pages.test.js'
+  );
+  for (const reqId of [
+    'matrix-detail',
+    'moat-calc-form',
+    'moat-physical',
+    'moat-trust',
+    'moat-switching',
+    'moat-network',
+    'moat-aiLeverage',
+    'moat-rentFreedom',
+    'calc-anti-ai',
+    'calc-moat-score',
+    'calc-quadrant',
+    'calc-verdict',
+    'modal-root',
+    'toast-root'
+  ]) {
+    assert.ok(
+      indexHtml.includes(`id="${reqId}"`),
+      `研究網頁缺少必要 DOM ID #${reqId}：請檢查 web/index.html，修妥後重跑 node --test test/web-pages.test.js`
+    );
+  }
+  for (const reqId of [
+    'lens-parent',
+    'lens-founder',
+    'unit-econ-form',
+    'sim-students',
+    'sim-classes',
+    'sim-fee',
+    'sim-venue',
+    'sim-ai',
+    'out-total-students',
+    'out-revenue',
+    'out-profit',
+    'out-margin',
+    'out-hours',
+    'out-saved-hours',
+    'modal-root',
+    'toast-root'
+  ]) {
+    assert.ok(
+      ventureHtml.includes(`id="${reqId}"`),
+      `創業網頁缺少必要 DOM ID #${reqId}：請檢查 web/venture.html，修妥後重跑 node --test test/web-pages.test.js`
+    );
+  }
   assert.ok(
-    indexHtml.includes('href="venture.html"') && indexHtml.includes('id="matrix-detail"') && indexHtml.includes('id="moat-calc-form"') && indexHtml.includes('id="modal-root"') && indexHtml.includes('data-moat-preset="swSystem"'),
-    '研究網頁缺少創業頁連結、四象限面板、護城河計分器、跳窗容器或垂直軟體系統預設鈕：請檢查 web/index.html，修妥後重跑 node --test test/web-pages.test.js'
+    indexHtml.includes('data-moat-preset="swSystem"'),
+    '研究網頁缺少垂直軟體系統預設鈕：請檢查 web/index.html，修妥後重跑 node --test test/web-pages.test.js'
   );
   assert.ok(
-    ventureHtml.includes('href="index.html"') &&
-      ventureHtml.includes('id="lens-parent"') &&
-      ventureHtml.includes('id="lens-founder"') &&
-      ventureHtml.includes('id="unit-econ-form"') &&
-      ventureHtml.includes('場地佔比 13.2%｜損益兩平：8 人') &&
+    ventureHtml.includes('場地佔比 13.2%｜損益兩平：8 人') &&
       ventureHtml.includes('17.6%') &&
       ventureHtml.includes('【待驗證假設】作品集轉換成本') &&
       ventureHtml.includes('課程完成率 &gt;90%、學期續費率 &gt;75%、轉介紹獲客佔比 &gt;50%') &&
       !ventureHtml.includes('完課率不到 15%'),
-    '創業網頁缺少研究頁連結、雙視角區塊、正確初始場地佔比與損平人數（13.2% / 8 人）、6 人班 17.6% 說明、比較表待驗證假設標示，或仍殘留未附來源之完課率百分比：請檢查 web/venture.html，修妥後重跑 node --test test/web-pages.test.js'
+    '創業網頁缺少正確初始場地佔比與損平人數（13.2% / 8 人）、6 人班 17.6% 說明、比較表待驗證假設標示，或仍殘留未附來源之完課率百分比：請檢查 web/venture.html，修妥後重跑 node --test test/web-pages.test.js'
   );
   assert.ok(
     phase2Doc.includes('四大不可替代能力組合') &&
@@ -439,16 +489,20 @@ test('五組四象限案例與雙軸護城河計分器公式及單點財務試�
     '損益兩平門檻前一人應為虧損、達門檻應非負：請檢查 web/app.js 的 calculateUnitEconomics，修妥後重跑 node --test test/web-pages.test.js'
   );
 
-  // R6-1 半分邊界回歸驗證：營業利益率 56.5% -> 57%、57.5% -> 58%，以及 1 班 4 人中度 AI 備課 2.65 小時 -> 2.7 小時（總工時 5.2 小時、省下 2.6 小時）
+  // R6-1 與 r7 B1 半分邊界回歸驗證：營業利益率 56.5% -> 57%、57.5% -> 58%、負利益率 -86.5% -> -86%，以及中度與低度 AI 備課工時
   const halfMargin1 = calculateUnitEconomics({ studentsPerClass: 7, classesCount: 4, monthlyFee: 5000, venueMode: 'partner', aiLevel: 'high' });
   const halfMargin2 = calculateUnitEconomics({ studentsPerClass: 9, classesCount: 6, monthlyFee: 4000, venueMode: 'studio2f', aiLevel: 'high' });
   const halfMargin3 = calculateUnitEconomics({ studentsPerClass: 10, classesCount: 3, monthlyFee: 8000, venueMode: 'street1f', aiLevel: 'high' });
   const halfHours = calculateUnitEconomics({ studentsPerClass: 4, classesCount: 1, monthlyFee: 6800, venueMode: 'partner', aiLevel: 'medium' });
+  const negHalfAndLowAi = calculateUnitEconomics({ studentsPerClass: 4, classesCount: 1, monthlyFee: 5000, venueMode: 'studio2f', aiLevel: 'low' });
   assert.equal(halfMargin1.marginPct, 57, '7 人×4 班×5,000 合作場地之營業利益率真值 56.5% 四捨五入應為 57%：請檢查 web/app.js 的 calculateUnitEconomics');
   assert.equal(halfMargin2.marginPct, 58, '9 人×6 班×4,000 二樓基地之營業利益率真值 57.5% 四捨五入應為 58%：請檢查 web/app.js 的 calculateUnitEconomics');
   assert.equal(halfMargin3.marginPct, 58, '10 人×3 班×8,000 一樓店面之營業利益率真值 57.5% 四捨五入應為 58%：請檢查 web/app.js 的 calculateUnitEconomics');
   assert.equal(halfHours.totalWeeklyHours, 5.2, '4 人×1 班中度 AI 之每週總工時（授課 2.5＋備課 2.65 四捨五入 2.7）應為 5.2 小時：請檢查 web/app.js 的 calculateUnitEconomics');
   assert.equal(halfHours.savedWeeklyHours, 2.6, '4 人×1 班中度 AI 之每週節省工時（5.3 - 2.7）應為 2.6 小時：請檢查 web/app.js 的 calculateUnitEconomics');
+  assert.equal(negHalfAndLowAi.marginPct, -86, '4 人×1 班×5,000 二樓基地之負利益率真值 -86.5% 四捨五入應為 -86%：請檢查 web/app.js 的 roundRatioInt 與 calculateUnitEconomics');
+  assert.equal(negHalfAndLowAi.totalWeeklyHours, 6.5, '4 人×1 班低度 AI 之每週總工時（授課 2.5＋備課 3.975 四捨五入 4.0）應為 6.5 小時：請檢查 web/app.js 的 calculateUnitEconomics');
+  assert.equal(negHalfAndLowAi.savedWeeklyHours, 1.3, '4 人×1 班低度 AI 之每週節省工時（5.3 - 4.0）應為 1.3 小時：請檢查 web/app.js 的 calculateUnitEconomics');
 });
 
 test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙頁初始化、隱藏分頁套用案例展開、六維弱點診斷與剪貼簿回退', async () => {
@@ -496,8 +550,8 @@ test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙�
     fakeDoc._makeEl('span', { id: 'sim-classes-val' });
     fakeDoc._makeEl('span', { id: 'sim-fee-val' });
     const outTotalStudents = fakeDoc._makeEl('div', { id: 'out-total-students' });
-    fakeDoc._makeEl('div', { id: 'out-revenue' });
-    fakeDoc._makeEl('div', { id: 'out-profit' });
+    const outRevenue = fakeDoc._makeEl('div', { id: 'out-revenue' });
+    const outProfit = fakeDoc._makeEl('div', { id: 'out-profit' });
     const outMargin = fakeDoc._makeEl('div', { id: 'out-margin' });
     const outHours = fakeDoc._makeEl('div', { id: 'out-hours' });
     const outSavedHours = fakeDoc._makeEl('div', { id: 'out-saved-hours' });
@@ -540,13 +594,15 @@ test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙�
       '調整每班人數為 6 人時，創業頁 #out-margin 應動態更新場地佔比為 17.6% 且損平維持 8 人：請檢查 web/app.js 的 initVenturePage，修妥後重跑 node --test test/web-pages.test.js'
     );
 
-    // R6-1 創業頁 DOM 與損益跳窗半分邊界驗證：7 人×4 班×5,000 合作場地（利益率 56.5% -> 57%），以及 4 人×1 班×6,800 中度 AI（總工時 5.2 小時、省 2.6 小時）
+    // R6-1 與 r7 B1 創業頁 DOM 與損益跳窗半分邊界及三階段完整對照驗證
     simStudents.value = '7';
     simClasses.value = '4';
     simFee.value = '5000';
     simVenue.value = 'partner';
     simAi.value = 'high';
     await simStudents.dispatchEvent('input');
+    assert.equal(outRevenue.textContent, 'NT$ 140,000', '7 人×4 班×5,000 時主畫面 #out-revenue 應顯示 NT$ 140,000');
+    assert.equal(outProfit.textContent, 'NT$ 79,100', '7 人×4 班×5,000 合作場地時主畫面 #out-profit 應顯示 NT$ 79,100');
     assert.equal(
       outMargin.textContent,
       '營業利益率 57%（場地佔比 20.6%｜損益兩平：11 人）',
@@ -555,8 +611,12 @@ test('載入 web/app.js 自動觸發頂層 bootWebApp 與 DOMContentLoaded 雙�
     openEconDetailModal();
     const econModalHtml1 = fakeDoc.getElementById('modal-root').children[0].innerHTML;
     assert.ok(
-      econModalHtml1.includes('營業利益率 57%') && econModalHtml1.includes('利益率 54%'),
-      '7 人×4 班×5,000 開啟損益明細跳窗時，主明細應顯示營業利益率 57% 且三階段對照一致：請檢查 web/app.js 的 openEconDetailModal'
+      econModalHtml1.includes('含場地費 NT$ 28,800，佔當月營收 <strong>20.6%</strong>') &&
+        econModalHtml1.includes('營業利益率 57%') &&
+        econModalHtml1.includes('階段一（MVP 2 班／合作空間）：</strong>營收 NT$ 70,000｜場地佔比 20.6%｜營業利益 NT$ 45,800（利益率 65%，損平 4 人）') &&
+        econModalHtml1.includes('階段二（穩定期 4 班／二樓基地）：</strong>營收 NT$ 140,000｜場地佔比 22.9%｜營業利益 NT$ 75,900（利益率 54%，損平 12 人）') &&
+        econModalHtml1.includes('階段三（滿載期 6 班／二樓基地＋助教）：</strong>營收 NT$ 210,000｜場地佔比 15.2%｜營業利益 NT$ 123,600（利益率 59%，損平 15 人）'),
+      '7 人×4 班×5,000 開啟損益明細跳窗時，主明細場地費、利益率與三階段（阶段一 65%、階段二 54%、階段三 59%）對照皆須完全一致：請檢查 web/app.js 的 openEconDetailModal'
     );
 
     simStudents.value = '4';

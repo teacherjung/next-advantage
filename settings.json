@@ -601,7 +601,9 @@
   "indexAnchors": [
    "未設定"
   ],
-  "prepareWorktree": []
+  "prepareWorktree": [
+   "無"
+  ]
  },
  "gates": [
   {
